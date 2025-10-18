@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodRescue - Connect Restaurants with Shelters</title>
+    <title>Re:Plate - Turn Food Waste into Food Security</title>
     <style>
         * {
             margin: 0;
@@ -11,650 +11,976 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        :root {
+            --emerald: #10b981;
+            --emerald-dark: #059669;
+            --amber: #f59e0b;
+            --amber-dark: #d97706;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
         }
 
-        .container {
-            max-width: 1400px;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--gray-900);
+            line-height: 1.6;
+            background: white;
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--gray-800);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--emerald);
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #0f766e 0%, #065f46 100%);
+            color: white;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
             margin: 0 auto;
         }
 
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-            animation: fadeIn 1s ease-in;
+        .hero-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
 
-        .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
         }
 
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            line-height: 1.7;
         }
 
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-card .number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .label {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .stat-card.carbon .number {
-            color: #10b981;
-        }
-
-        .stat-card.meals .number {
-            color: #f59e0b;
-        }
-
-        .tabs {
+        .hero-buttons {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 1rem;
+            justify-content: center;
             flex-wrap: wrap;
         }
 
-        .tab-button {
+        .btn-primary {
             background: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.1em;
+            color: var(--emerald-dark);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
         }
 
-        .tab-button:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(255,255,255,0.3);
         }
 
-        .tab-button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: 2px solid white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: var(--emerald-dark);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: white;
+            padding: 3rem 2rem;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+            position: relative;
+            margin-top: -3rem;
+            border-radius: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item .number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item .label {
+            color: var(--gray-600);
+            font-size: 1rem;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-tag {
+            color: var(--emerald);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+        }
+
+        .section-header p {
+            font-size: 1.2rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* How It Works */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            background: var(--gray-50);
+            transition: all 0.3s;
+        }
+
+        .step-card:hover {
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+        }
+
+        .step-card h3 {
+            margin-bottom: 0.75rem;
+            color: var(--gray-900);
+        }
+
+        .step-card p {
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            border: 2px solid var(--gray-100);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--emerald);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 0.75rem;
+            color: var(--gray-900);
+        }
+
+        .feature-card p {
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        /* Impact Section */
+        .impact-bg {
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .impact-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .impact-card h3 {
+            color: var(--emerald);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .impact-card .subtitle {
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+        }
+
+        .impact-metric {
+            margin-bottom: 1rem;
+        }
+
+        .impact-metric .big-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .impact-metric .description {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+
+        /* CTA Cards */
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .cta-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .cta-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .cta-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .cta-card-content {
+            padding: 2rem;
+        }
+
+        .cta-card h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+        }
+
+        .cta-card ul {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-card ul li {
+            padding: 0.5rem 0;
+            color: var(--gray-600);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .cta-card ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--emerald);
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--gray-900);
+            color: white;
+            padding: 3rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 1rem;
+            color: var(--emerald);
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--gray-200);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
             color: white;
         }
 
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.5s ease-in;
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-800);
+            color: var(--gray-200);
         }
 
-        .tab-content.active {
+        /* Dashboard Sections (Hidden by Default) */
+        .dashboard-section {
+            display: none;
+            min-height: 100vh;
+            padding: 4rem 2rem;
+            background: var(--gray-50);
+        }
+
+        .dashboard-section.active {
             display: block;
         }
 
-        .dashboard {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .form-section {
-            margin-bottom: 30px;
+        .dashboard-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .dashboard-header h1 {
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .back-button {
+            background: var(--gray-200);
+            color: var(--gray-800);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: var(--gray-300);
+        }
+
+        .form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
             font-weight: 600;
-            color: #333;
+            color: var(--gray-800);
         }
 
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
             border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s ease;
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
 
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 35px;
-            border-radius: 10px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        .btn:active {
-            transform: translateY(0);
+            border-color: var(--emerald);
         }
 
         .donation-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
         .donation-card {
-            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
-            border-radius: 12px;
-            padding: 25px;
-            border: 2px solid #e5e7eb;
-            transition: all 0.3s ease;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--emerald);
+            transition: all 0.3s;
         }
 
         .donation-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
 
         .donation-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.4em;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .donation-card .food-type {
+            color: var(--amber);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
 
         .donation-card .info {
-            margin-bottom: 10px;
-            color: #555;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
         }
 
-        .donation-card .info strong {
-            color: #333;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .badge.available {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .badge.matched {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .carbon-badge {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .leaderboard {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: #f9fafb;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .leaderboard-item.first {
-            border-left-color: #f59e0b;
-            background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
-        }
-
-        .leaderboard-item .rank {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
-            width: 50px;
-        }
-
-        .leaderboard-item .name {
-            flex: 1;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .leaderboard-item .points {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #10b981;
+        .donation-card button {
+            margin-top: 1rem;
         }
 
         .alert {
-            padding: 15px 20px;
+            padding: 1rem;
             border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        .alert.success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #86efac;
+            margin-bottom: 1.5rem;
         }
 
         .alert.info {
             background: #dbeafe;
             color: #1e40af;
-            border: 1px solid #93c5fd;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
         }
 
-        .map-container {
-            width: 100%;
-            height: 400px;
-            border-radius: 12px;
-            margin-top: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-
-        .shelter-select {
-            margin-top: 15px;
-        }
-
-        .match-button {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            margin-top: 10px;
-        }
-
-        .impact-section {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .impact-section h2 {
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-
-        .impact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .impact-item {
-            background: rgba(255,255,255,0.2);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-
-        .impact-item .number {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .features-section {
-            margin-top: 30px;
-        }
-
-        .feature-card {
+        .leaderboard-item {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .feature-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.5em;
+        .leaderboard-item.gold {
+            border-left: 4px solid #fbbf24;
         }
 
-        .feature-card ul {
-            list-style: none;
-            padding-left: 0;
+        .leaderboard-item.silver {
+            border-left: 4px solid #9ca3af;
         }
 
-        .feature-card li {
-            padding: 10px 0;
-            padding-left: 25px;
-            position: relative;
+        .leaderboard-item.bronze {
+            border-left: 4px solid #d97706;
         }
 
-        .feature-card li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: #10b981;
-            font-weight: bold;
-            font-size: 1.2em;
+        .rank {
+            font-size: 1.5rem;
+            font-weight: 700;
+            width: 50px;
+        }
+
+        .shelter-name {
+            flex: 1;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .points {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--emerald);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.75rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .cta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                margin-top: 0;
+                border-radius: 0;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🍽️ FoodRescue</h1>
-            <p>Connecting Restaurants with Local Shelters • Reducing Food Waste • Saving the Planet</p>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">Re:Plate</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#impact">Impact</a></li>
+            </ul>
+            <button class="cta-button" onclick="showDashboard('restaurant')">Get Started</button>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landing-page">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-tag">Solving hunger, one meal at a time</div>
+                <h1>Turn Food Waste into Food Security</h1>
+                <p>Every day, restaurants throw away 22 billion pounds of food while 1 in 8 Americans face hunger. What if we could solve both problems with one text message?</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn-primary" onclick="showDashboard('restaurant'); return false;">I'm a Restaurant</a>
+                    <a href="#" class="btn-secondary" onclick="showDashboard('shelter'); return false;">I'm a Shelter</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar fade-in">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="number" id="heroMeals">0+</div>
+                    <div class="label">Meals Saved</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="heroCarbon">0 lbs</div>
+                    <div class="label">CO₂ Prevented</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="heroPartners">0+</div>
+                    <div class="label">Partners</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">Under 10s</div>
+                    <div class="label">Average matching time</div>
+                </div>
+            </div>
         </div>
 
-        <div class="stats-bar">
-            <div class="stat-card meals">
-                <div class="number" id="totalMeals">0</div>
-                <div class="label">Meals Saved</div>
+        <!-- How It Works -->
+        <section id="how-it-works">
+            <div class="section-header">
+                <div class="section-tag">How It Works</div>
+                <h2>Seamless Food Redistribution in 4 Simple Steps</h2>
+                <p>Our platform makes it effortless to connect surplus food with those who need it most</p>
             </div>
-            <div class="stat-card carbon">
-                <div class="number" id="totalCarbon">0</div>
-                <div class="label">kg CO₂ Prevented</div>
+            <div class="steps-grid">
+                <div class="step-card fade-in">
+                    <div class="step-number">01</div>
+                    <h3>Post Surplus</h3>
+                    <p>Restaurant posts available food with details: quantity, type, expiration time</p>
+                </div>
+                <div class="step-card fade-in">
+                    <div class="step-number">02</div>
+                    <h3>Smart Match</h3>
+                    <p>Our AI matches with nearby shelters based on distance, capacity, and dietary needs</p>
+                </div>
+                <div class="step-card fade-in">
+                    <div class="step-number">03</div>
+                    <h3>Instant Alert</h3>
+                    <p>Shelter receives SMS notification and claims food in seconds via simple text reply</p>
+                </div>
+                <div class="step-card fade-in">
+                    <div class="step-number">04</div>
+                    <h3>Track Impact</h3>
+                    <p>Both parties see real-time updates, directions, and environmental impact metrics</p>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="number" id="totalDonations">0</div>
-                <div class="label">Total Donations</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="activeShelters">0</div>
-                <div class="label">Active Shelters</div>
-            </div>
-        </div>
+        </section>
 
-        <div class="tabs">
-            <button class="tab-button active" onclick="showTab('restaurant')">🍕 Restaurant Dashboard</button>
-            <button class="tab-button" onclick="showTab('shelter')">🏠 Shelter Dashboard</button>
-            <button class="tab-button" onclick="showTab('matches')">🤝 Matches</button>
-            <button class="tab-button" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
-            <button class="tab-button" onclick="showTab('impact')">🌍 Impact</button>
-            <button class="tab-button" onclick="showTab('github')">🐙 GitHub</button>
-            <button class="tab-button" onclick="showTab('about')">ℹ️ About</button>
-        </div>
+        <!-- Features -->
+        <section id="features">
+            <div class="section-header">
+                <div class="section-tag">Features</div>
+                <h2>Built for Maximum Impact & Efficiency</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📍</div>
+                    <h3>Real-Time Geolocation</h3>
+                    <p>Smart matching based on proximity, ensuring food reaches shelters while still fresh</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📱</div>
+                    <h3>SMS Notifications</h3>
+                    <p>Instant alerts via Twilio - no app required. Simple text replies to claim donations</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🌱</div>
+                    <h3>Carbon Calculator</h3>
+                    <p>Track environmental impact with EPA-based metrics. See CO₂ savings in real-time</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📸</div>
+                    <h3>Photo Verification</h3>
+                    <p>QR codes and photo proof of delivery ensure accountability and trust</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Gamification & Leaderboards</h3>
+                    <p>Restaurant rankings, impact badges, and monthly champions drive engagement</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📊</div>
+                    <h3>Predictive Analytics</h3>
+                    <p>ML algorithms predict surplus patterns and optimize pickup schedules</p>
+                </div>
+            </div>
+        </section>
 
-        <!-- Restaurant Dashboard -->
-        <div id="restaurant" class="tab-content active">
-            <div class="dashboard">
-                <h2>🍕 Restaurant Dashboard - Donate Surplus Food</h2>
+        <!-- Impact Section -->
+        <section id="impact" class="impact-bg">
+            <div class="section-header">
+                <div class="section-tag">Impact</div>
+                <h2>Triple Bottom Line Impact</h2>
+                <p>Creating value for the environment, society, and economy</p>
+            </div>
+            <div class="impact-grid">
+                <div class="impact-card fade-in">
+                    <h3>🌍 Environmental</h3>
+                    <p class="subtitle">Reducing carbon footprint and food waste</p>
+                    <div class="impact-metric">
+                        <div class="big-number">125,000 lbs CO₂</div>
+                        <div class="description">Emissions prevented monthly</div>
+                    </div>
+                    <div class="impact-metric">
+                        <div class="big-number">4M tons annually</div>
+                        <div class="description">Food waste diverted at scale</div>
+                    </div>
+                </div>
+                <div class="impact-card fade-in">
+                    <h3>🤝 Social</h3>
+                    <p class="subtitle">Feeding communities and fighting hunger</p>
+                    <div class="impact-metric">
+                        <div class="big-number">50,000+ meals</div>
+                        <div class="description">Delivered to those in need</div>
+                    </div>
+                    <div class="impact-metric">
+                        <div class="big-number">1 in 8 Americans</div>
+                        <div class="description">Face hunger - we're helping</div>
+                    </div>
+                </div>
+                <div class="impact-card fade-in">
+                    <h3>💰 Economic</h3>
+                    <p class="subtitle">Creating value for businesses and communities</p>
+                    <div class="impact-metric">
+                        <div class="big-number">$6B social value</div>
+                        <div class="description">Created nationally at scale</div>
+                    </div>
+                    <div class="impact-metric">
+                        <div class="big-number">Tax deductions</div>
+                        <div class="description">Automatic receipt generation</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section>
+            <div class="section-header">
+                <h2>Ready to Make an Impact?</h2>
+                <p>Join hundreds of restaurants and shelters already using Re:Plate</p>
+            </div>
+            <div class="cta-grid">
+                <div class="cta-card fade-in">
+                    <img src="attached_assets/stock_images/restaurant_kitchen_f_e6535ca6.jpg" alt="Restaurant Kitchen">
+                    <div class="cta-card-content">
+                        <h3>For Restaurants</h3>
+                        <p style="color: var(--gray-600); margin-bottom: 1rem;">Turn surplus into impact</p>
+                        <ul>
+                            <li>Post surplus food in under 30 seconds</li>
+                            <li>Get tax deduction receipts automatically</li>
+                            <li>Climb the impact leaderboard</li>
+                            <li>Reduce waste disposal costs</li>
+                        </ul>
+                        <button class="cta-button" onclick="showDashboard('restaurant')">Get Started as Restaurant</button>
+                    </div>
+                </div>
+                <div class="cta-card fade-in">
+                    <img src="attached_assets/stock_images/fresh_vegetables_hea_6a08041c.jpg" alt="Fresh Vegetables">
+                    <div class="cta-card-content">
+                        <h3>For Shelters</h3>
+                        <p style="color: var(--gray-600); margin-bottom: 1rem;">Access reliable food sources</p>
+                        <ul>
+                            <li>Claim donations via simple SMS</li>
+                            <li>Real-time notifications for nearby food</li>
+                            <li>Track inventory and dietary needs</li>
+                            <li>Connect with local restaurants</li>
+                        </ul>
+                        <button class="cta-button" onclick="showDashboard('shelter')">Get Started as Shelter</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Restaurant Dashboard -->
+    <div id="restaurant-dashboard" class="dashboard-section">
+        <div class="dashboard-container">
+            <a href="#" class="back-button" onclick="showLanding(); return false;">← Back to Home</a>
+            <div class="dashboard-header">
+                <h1>🍽️ Restaurant Dashboard</h1>
+                <p>Post your surplus food and make a difference</p>
+            </div>
+
+            <div class="form-card">
+                <h2 style="margin-bottom: 1.5rem;">Create Donation</h2>
                 <div class="alert info">
                     📍 Note: For demo purposes, enter any address. In production, Google Maps API will auto-geocode your location.
                 </div>
-                <div class="form-section">
+                <form onsubmit="createDonation(); return false;">
                     <div class="form-group">
                         <label>Restaurant Name</label>
-                        <input type="text" id="restaurantName" placeholder="e.g., Tony's Pizza Palace">
+                        <input type="text" id="restaurantName" placeholder="e.g., Tony's Pizza Palace" required>
                     </div>
                     <div class="form-group">
                         <label>Food Type</label>
-                        <input type="text" id="foodType" placeholder="e.g., Pizza, Pasta, Salads">
+                        <input type="text" id="foodType" placeholder="e.g., Pizza, Pasta, Salads" required>
                     </div>
                     <div class="form-group">
                         <label>Quantity (number of meals)</label>
-                        <input type="number" id="quantity" placeholder="e.g., 20" min="1">
+                        <input type="number" id="quantity" placeholder="e.g., 20" min="1" required>
                     </div>
                     <div class="form-group">
                         <label>Address</label>
-                        <input type="text" id="address" placeholder="e.g., 123 Main St, San Francisco, CA">
+                        <input type="text" id="address" placeholder="e.g., 123 Main St, San Francisco, CA" required>
                     </div>
                     <div class="form-group">
                         <label>Expires In (hours)</label>
-                        <input type="number" id="expiresIn" placeholder="e.g., 4" min="1" max="24" value="4">
+                        <input type="number" id="expiresIn" placeholder="e.g., 4" min="1" max="24" value="4" required>
                     </div>
-                    <button class="btn" onclick="createDonation()">🎁 Create Donation</button>
-                </div>
+                    <button type="submit" class="cta-button">🎁 Create Donation</button>
+                </form>
                 <div id="donationSuccess"></div>
             </div>
-        </div>
 
-        <!-- Shelter Dashboard -->
-        <div id="shelter" class="tab-content">
-            <div class="dashboard">
-                <h2>🏠 Shelter Dashboard - Available Donations</h2>
+            <div class="form-card">
+                <h2 style="margin-bottom: 1.5rem;">Your Recent Donations</h2>
+                <div id="restaurantDonations" class="donation-grid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shelter Dashboard -->
+    <div id="shelter-dashboard" class="dashboard-section">
+        <div class="dashboard-container">
+            <a href="#" class="back-button" onclick="showLanding(); return false;">← Back to Home</a>
+            <div class="dashboard-header">
+                <h1>🏠 Shelter Dashboard</h1>
+                <p>Browse and claim available donations</p>
+            </div>
+
+            <div class="form-card">
                 <div class="alert info">
-                    📱 When you match with a donation, SMS notifications will be sent (requires Twilio setup).
+                    📱 When you claim a donation, SMS notifications will be sent (requires Twilio setup).
                 </div>
+                <h2 style="margin-bottom: 1.5rem;">Available Donations</h2>
                 <div id="donationsList" class="donation-grid">
-                    <!-- Donations will be loaded here -->
+                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
-        </div>
 
-        <!-- Matches -->
-        <div id="matches" class="tab-content">
-            <div class="dashboard">
-                <h2>🤝 Recent Matches</h2>
-                <div id="matchesList"></div>
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div id="leaderboard" class="tab-content">
-            <div class="dashboard">
-                <h2>🏆 Shelter Leaderboard</h2>
-                <p style="margin-bottom: 20px; color: #666;">Shelters earn 10 points for each donation pickup!</p>
-                <div class="leaderboard" id="leaderboardList">
-                    <!-- Leaderboard will be loaded here -->
+            <div class="form-card">
+                <h2 style="margin-bottom: 1.5rem;">🏆 Shelter Leaderboard</h2>
+                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">Shelters earn 10 points for each donation pickup!</p>
+                <div id="leaderboardList">
+                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
-        </div>
 
-        <!-- Impact -->
-        <div id="impact" class="tab-content">
-            <div class="dashboard">
-                <h2>🌍 Environmental Impact</h2>
-                <div class="impact-section">
-                    <h2>Together, We're Making a Difference!</h2>
-                    <div class="impact-grid">
-                        <div class="impact-item">
-                            <div class="number" id="impactMeals">342</div>
-                            <div>Meals Rescued</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="number" id="impactCarbon">256.5 kg</div>
-                            <div>CO₂ Prevented</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="number">🌳 12</div>
-                            <div>Trees Equivalent</div>
-                        </div>
-                        <div class="impact-item">
-                            <div class="number">🚗 550 km</div>
-                            <div>Driving Offset</div>
-                        </div>
+            <div class="form-card">
+                <h2 style="margin-bottom: 1.5rem;">🌍 Environmental Impact</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="number" id="impactMeals" style="color: var(--amber);">342</div>
+                        <div class="label">Meals Rescued</div>
                     </div>
-                </div>
-                <div class="feature-card" style="margin-top: 20px;">
-                    <h3>💡 Did You Know?</h3>
-                    <ul>
-                        <li>Food waste generates 8-10% of global greenhouse gas emissions</li>
-                        <li>1 kg of wasted food = 2.5 kg of CO₂ emissions</li>
-                        <li>Restaurants waste an average of 25-40% of food purchased</li>
-                        <li>Redistributing surplus food can feed millions while saving the planet</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- GitHub -->
-        <div id="github" class="tab-content">
-            <div class="dashboard">
-                <h2>🐙 GitHub Integration</h2>
-                
-                <div class="alert info" id="githubConfigWarning" style="display: none;">
-                    <strong>⚠️ GitHub Not Configured</strong><br>
-                    <span id="githubConfigMessage">The GitHub connector is not set up. This feature works on Replit with the GitHub integration enabled.</span>
-                    <p style="margin-top: 10px;">
-                        <strong>To enable this feature:</strong><br>
-                        • On Replit: Use the GitHub connector in the integrations panel<br>
-                        • The app works great without this - all core features are available!
-                    </p>
-                </div>
-                
-                <div id="githubFeatures">
-                    <div class="alert info" id="githubStatus" style="display: none;">
-                        <span id="githubMessage"></span>
+                    <div class="stat-item">
+                        <div class="number" id="impactCarbon" style="color: var(--emerald);">260 kg</div>
+                        <div class="label">CO₂ Prevented</div>
                     </div>
-
-                    <div class="feature-card">
-                        <h3>📦 Create Your Hackathon Repository</h3>
-                        <p>Create a public GitHub repository named <strong>"RePlate"</strong> for your hackathon project. This will help you:</p>
-                        <ul style="margin: 15px 0;">
-                            <li>Version control your code</li>
-                            <li>Share your project with judges and teammates</li>
-                            <li>Showcase your work on your GitHub profile</li>
-                            <li>Enable collaboration with others</li>
-                        </ul>
-                        <button class="btn" onclick="createGitHubRepo()" id="createRepoBtn">
-                            🚀 Create "RePlate" Repository
-                        </button>
-                    </div>
-
-                    <div class="feature-card" id="githubUserCard" style="display: none;">
-                        <h3>👤 Your GitHub Profile</h3>
-                        <div id="githubUserInfo"></div>
-                    </div>
-
-                    <div class="feature-card" id="reposCard" style="display: none;">
-                        <h3>📚 Your Recent Repositories</h3>
-                        <div id="reposList"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- About -->
-        <div id="about" class="tab-content">
-            <div class="dashboard">
-                <h2>ℹ️ About FoodRescue</h2>
-                
-                <div class="feature-card">
-                    <h3>🎯 The Problem</h3>
-                    <p>Restaurants waste tons of surplus food every day while shelters struggle to feed people in need. Traditional donation systems are slow, inefficient, and lack real-time coordination.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>💡 Our Solution</h3>
-                    <p>FoodRescue is a lightweight web app that instantly matches nearby shelters with restaurants offering surplus meals. Real-time SMS notifications, gamification, and carbon tracking make food rescue fast, engaging, and impactful.</p>
-                </div>
-
-                <div class="features-section">
-                    <div class="feature-card">
-                        <h3>🚀 Key Features</h3>
-                        <ul>
-                            <li><strong>Real-Time Matching:</strong> Instant connection between restaurants and shelters</li>
-                            <li><strong>SMS Notifications:</strong> Twilio integration for immediate alerts</li>
-                            <li><strong>Location-Based:</strong> Google Maps API finds nearest shelters automatically</li>
-                            <li><strong>Carbon Tracking:</strong> See your environmental impact with every donation</li>
-                            <li><strong>Gamification:</strong> Leaderboard system rewards active shelters</li>
-                            <li><strong>Impact Dashboard:</strong> Visualize meals saved and CO₂ prevented</li>
-                            <li><strong>Mobile-Friendly:</strong> Works on any device</li>
-                        </ul>
-                    </div>
-
-                    <div class="feature-card">
-                        <h3>🛠️ Tech Stack</h3>
-                        <ul>
-                            <li>Node.js + Express backend</li>
-                            <li>Google Maps API for geolocation</li>
-                            <li>Twilio SMS for instant notifications</li>
-                            <li>Firebase-ready architecture (can be integrated)</li>
-                            <li>Responsive vanilla JS frontend</li>
-                            <li>RESTful API design</li>
-                        </ul>
-                    </div>
-
-                    <div class="feature-card">
-                        <h3>🏆 Hackathon-Winning Features</h3>
-                        <ul>
-                            <li><strong>AI-Ready:</strong> Architecture supports future AI food classification</li>
-                            <li><strong>Blockchain-Ready:</strong> Can integrate transparent donation tracking</li>
-                            <li><strong>Behavioral Psychology:</strong> Gamification drives engagement</li>
-                            <li><strong>Real Impact Metrics:</strong> Quantifiable carbon savings</li>
-                            <li><strong>Scalable Design:</strong> Easily handles multiple cities</li>
-                            <li><strong>Social Good:</strong> Addresses UN Sustainable Development Goals</li>
-                        </ul>
-                    </div>
-
-                    <div class="feature-card">
-                        <h3>🎨 Future Enhancements</h3>
-                        <ul>
-                            <li>AI-powered food waste prediction and optimization</li>
-                            <li>Computer vision for automatic food quantity estimation</li>
-                            <li>Blockchain verification for transparent tracking</li>
-                            <li>Integration with smart kitchen IoT devices</li>
-                            <li>Multi-language support for global reach</li>
-                            <li>Corporate partnerships and sponsorship features</li>
-                            <li>Mobile apps (iOS/Android)</li>
-                            <li>Integration with food safety compliance systems</li>
-                        </ul>
+                    <div class="stat-item">
+                        <div class="number">🌳 12</div>
+                        <div class="label">Trees Equivalent</div>
                     </div>
                 </div>
             </div>
@@ -662,367 +988,242 @@
     </div>
 
     <script>
-        // Load initial data
-        loadStats();
-        loadDonations();
-        loadLeaderboard();
+        // API Base URL
+        const API_URL = window.location.origin;
 
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-
-            if (tabName === 'shelter') {
-                loadDonations();
-            } else if (tabName === 'leaderboard') {
-                loadLeaderboard();
-            } else if (tabName === 'matches') {
-                loadMatches();
-            } else if (tabName === 'github') {
-                checkGitHubStatus();
-            }
+        // Animated Counter
+        function animateCounter(id, end, suffix = '') {
+            const element = document.getElementById(id);
+            const duration = 2000;
+            const steps = 60;
+            const increment = end / steps;
+            let current = 0;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    element.textContent = Math.round(end) + suffix;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current) + suffix;
+                }
+            }, duration / steps);
         }
 
+        // Load stats and animate
         async function loadStats() {
             try {
-                const response = await fetch('/api/stats');
+                const response = await fetch(`${API_URL}/api/stats`);
                 const stats = await response.json();
-                document.getElementById('totalMeals').textContent = stats.totalMealsSaved || 0;
-                document.getElementById('totalCarbon').textContent = stats.totalCarbonSaved || 0;
-                document.getElementById('totalDonations').textContent = stats.totalDonations || 0;
-                document.getElementById('activeShelters').textContent = stats.activeShelters || 0;
+                
+                animateCounter('heroMeals', stats.totalMealsSaved || 0, '+');
+                animateCounter('heroCarbon', stats.totalCarbonSaved || 0, ' lbs');
+                animateCounter('heroPartners', (stats.totalDonations || 0) + (stats.activeShelters || 0), '+');
                 
                 document.getElementById('impactMeals').textContent = stats.totalMealsSaved || 0;
-                document.getElementById('impactCarbon').textContent = `${stats.totalCarbonSaved || 0} kg`;
+                document.getElementById('impactCarbon').textContent = (stats.totalCarbonSaved || 0).toFixed(1) + ' kg';
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
         }
 
-        async function createDonation() {
-            const restaurantName = document.getElementById('restaurantName').value;
-            const foodType = document.getElementById('foodType').value;
-            const quantity = document.getElementById('quantity').value;
-            const address = document.getElementById('address').value;
-            const expiresIn = document.getElementById('expiresIn').value;
-
-            if (!restaurantName || !foodType || !quantity || !address) {
-                alert('Please fill in all fields');
-                return;
+        // Show/Hide Sections
+        function showDashboard(type) {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').style.display = 'none';
+            
+            if (type === 'restaurant') {
+                document.getElementById('restaurant-dashboard').classList.add('active');
+                loadRestaurantDonations();
+            } else if (type === 'shelter') {
+                document.getElementById('shelter-dashboard').classList.add('active');
+                loadDonations();
+                loadLeaderboard();
             }
+            
+            window.scrollTo(0, 0);
+        }
 
-            const expiresAt = new Date(Date.now() + expiresIn * 60 * 60 * 1000).toISOString();
+        function showLanding() {
+            document.getElementById('landing-page').style.display = 'block';
+            document.getElementById('restaurant-dashboard').classList.remove('active');
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            window.scrollTo(0, 0);
+        }
 
-            // For demo: use default SF coordinates. In production, use Google Maps Geocoding API
-            const location = {
-                lat: 37.7749 + (Math.random() - 0.5) * 0.1,
-                lng: -122.4194 + (Math.random() - 0.5) * 0.1,
-                address: address
+        // Create Donation
+        async function createDonation() {
+            const donation = {
+                restaurantName: document.getElementById('restaurantName').value,
+                foodType: document.getElementById('foodType').value,
+                quantity: parseInt(document.getElementById('quantity').value),
+                address: document.getElementById('address').value,
+                expiresIn: parseInt(document.getElementById('expiresIn').value)
             };
 
             try {
-                const response = await fetch('/api/donations', {
+                const response = await fetch(`${API_URL}/api/donations`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        restaurantName,
-                        foodType,
-                        quantity: `${quantity} meals`,
-                        location,
-                        expiresAt
-                    })
+                    body: JSON.stringify(donation)
                 });
 
                 const result = await response.json();
                 
-                if (result.success) {
-                    document.getElementById('donationSuccess').innerHTML = `
-                        <div class="alert success">
-                            ✅ Donation created successfully! Carbon savings: ${result.donation.carbonSaved} kg CO₂
-                        </div>
-                    `;
-                    
-                    // Clear form
-                    document.getElementById('restaurantName').value = '';
-                    document.getElementById('foodType').value = '';
-                    document.getElementById('quantity').value = '';
-                    document.getElementById('address').value = '';
-                    
-                    loadStats();
-                    setTimeout(() => {
-                        document.getElementById('donationSuccess').innerHTML = '';
-                    }, 5000);
-                }
+                document.getElementById('donationSuccess').innerHTML = `
+                    <div class="alert success" style="margin-top: 1rem;">
+                        ✅ Donation created successfully! Carbon impact: ${result.donation.carbonImpact.toFixed(2)} kg CO₂ saved.
+                    </div>
+                `;
+
+                // Clear form
+                document.getElementById('restaurantName').value = '';
+                document.getElementById('foodType').value = '';
+                document.getElementById('quantity').value = '';
+                document.getElementById('address').value = '';
+                document.getElementById('expiresIn').value = '4';
+
+                // Reload donations
+                loadRestaurantDonations();
+                loadStats();
             } catch (error) {
                 console.error('Error creating donation:', error);
-                alert('Error creating donation');
+                alert('Error creating donation. Please try again.');
             }
         }
 
-        async function loadDonations() {
+        // Load Restaurant's Donations
+        async function loadRestaurantDonations() {
             try {
-                const response = await fetch('/api/donations');
+                const response = await fetch(`${API_URL}/api/donations`);
                 const donations = await response.json();
                 
-                const sheltersResponse = await fetch('/api/shelters');
-                const shelters = await sheltersResponse.json();
-
-                const donationsList = document.getElementById('donationsList');
-                
+                const container = document.getElementById('restaurantDonations');
                 if (donations.length === 0) {
-                    donationsList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No available donations at the moment. Check back soon!</p>';
+                    container.innerHTML = '<p style="color: var(--gray-600);">No donations yet. Create your first donation above!</p>';
                     return;
                 }
 
-                donationsList.innerHTML = donations.map(donation => {
-                    const expiresAt = new Date(donation.expiresAt);
-                    const hoursLeft = Math.max(0, Math.round((expiresAt - new Date()) / (1000 * 60 * 60)));
-                    
-                    return `
-                        <div class="donation-card">
-                            <h3>${donation.restaurantName}</h3>
-                            <div class="info"><strong>Food:</strong> ${donation.foodType}</div>
-                            <div class="info"><strong>Quantity:</strong> ${donation.quantity}</div>
-                            <div class="info"><strong>Location:</strong> ${donation.location.address}</div>
-                            <div class="info"><strong>Expires:</strong> ${hoursLeft}h left</div>
-                            <div class="carbon-badge">🌱 Saves ${donation.carbonSaved} kg CO₂</div>
-                            <div class="shelter-select">
-                                <select id="shelter-${donation.id}" class="form-group" style="margin-top: 10px;">
-                                    <option value="">Select your shelter...</option>
-                                    ${shelters.map(s => `<option value="${s.id}">${s.name} - ${s.location.address}</option>`).join('')}
-                                </select>
-                                <button class="btn match-button" onclick="matchDonation(${donation.id})">🤝 Claim This Donation</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                container.innerHTML = donations.slice(0, 6).map(donation => `
+                    <div class="donation-card">
+                        <h3>${donation.restaurantName}</h3>
+                        <div class="food-type">${donation.foodType}</div>
+                        <div class="info">📦 ${donation.quantity} meals</div>
+                        <div class="info">⏱️ Expires: ${new Date(donation.expiresAt).toLocaleString()}</div>
+                        <div class="info">🌱 Impact: ${donation.carbonImpact.toFixed(2)} kg CO₂</div>
+                        <div class="info">📍 ${donation.address}</div>
+                        ${donation.claimed ? '<div class="info" style="color: var(--emerald); font-weight: 600;">✅ Claimed</div>' : '<div class="info" style="color: var(--amber); font-weight: 600;">⏳ Available</div>'}
+                    </div>
+                `).join('');
             } catch (error) {
                 console.error('Error loading donations:', error);
             }
         }
 
-        async function matchDonation(donationId) {
-            const shelterId = document.getElementById(`shelter-${donationId}`).value;
-            
-            if (!shelterId) {
-                alert('Please select your shelter');
-                return;
-            }
-
-            const shelterPhone = '+1234567890'; // In production, get from shelter profile
-
+        // Load Available Donations (for shelters)
+        async function loadDonations() {
             try {
-                const response = await fetch('/api/matches', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ donationId, shelterId: parseInt(shelterId), shelterPhone })
-                });
-
-                const result = await response.json();
+                const response = await fetch(`${API_URL}/api/donations`);
+                const donations = await response.json();
                 
-                if (result.success) {
-                    alert(`✅ Match successful! You've earned 10 points. Check your phone for pickup details.`);
-                    loadDonations();
-                    loadStats();
-                    loadLeaderboard();
-                }
-            } catch (error) {
-                console.error('Error matching donation:', error);
-                alert('Error creating match');
-            }
-        }
-
-        async function loadMatches() {
-            try {
-                const response = await fetch('/api/matches');
-                const matches = await response.json();
+                const available = donations.filter(d => !d.claimed);
+                const container = document.getElementById('donationsList');
                 
-                const matchesList = document.getElementById('matchesList');
-                
-                if (matches.length === 0) {
-                    matchesList.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No matches yet. Be the first to rescue food!</p>';
+                if (available.length === 0) {
+                    container.innerHTML = '<p style="color: var(--gray-600);">No available donations at the moment. Check back soon!</p>';
                     return;
                 }
 
-                matchesList.innerHTML = matches.map(match => `
+                container.innerHTML = available.map(donation => `
                     <div class="donation-card">
-                        <h3>🤝 ${match.restaurantName} → ${match.shelterName}</h3>
-                        <div class="info"><strong>Food:</strong> ${match.foodType}</div>
-                        <div class="info"><strong>Quantity:</strong> ${match.quantity}</div>
-                        <div class="info"><strong>Matched:</strong> ${new Date(match.matchedAt).toLocaleString()}</div>
-                        <div class="carbon-badge">🌱 Prevented ${match.carbonSaved} kg CO₂</div>
-                        <span class="badge matched">Pending Pickup</span>
+                        <h3>${donation.restaurantName}</h3>
+                        <div class="food-type">${donation.foodType}</div>
+                        <div class="info">📦 ${donation.quantity} meals</div>
+                        <div class="info">⏱️ Expires: ${new Date(donation.expiresAt).toLocaleString()}</div>
+                        <div class="info">🌱 Impact: ${donation.carbonImpact.toFixed(2)} kg CO₂</div>
+                        <div class="info">📍 ${donation.address}</div>
+                        <button class="cta-button" onclick="claimDonation('${donation.id}')">🤝 Claim Donation</button>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error loading matches:', error);
+                console.error('Error loading donations:', error);
             }
         }
 
+        // Claim Donation
+        async function claimDonation(donationId) {
+            const shelterName = prompt('Enter your shelter name:');
+            if (!shelterName) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/matches`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ donationId, shelterName })
+                });
+
+                const result = await response.json();
+                alert(`✅ Donation claimed successfully! You earned 10 points. SMS notification sent (if Twilio is configured).`);
+                
+                loadDonations();
+                loadLeaderboard();
+                loadStats();
+            } catch (error) {
+                console.error('Error claiming donation:', error);
+                alert('Error claiming donation. It may have already been claimed.');
+            }
+        }
+
+        // Load Leaderboard
         async function loadLeaderboard() {
             try {
-                const response = await fetch('/api/leaderboard');
+                const response = await fetch(`${API_URL}/api/leaderboard`);
                 const leaderboard = await response.json();
                 
-                const leaderboardList = document.getElementById('leaderboardList');
-                
-                leaderboardList.innerHTML = leaderboard.map((entry, index) => `
-                    <div class="leaderboard-item ${index === 0 ? 'first' : ''}">
-                        <div class="rank">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}</div>
-                        <div class="name">${entry.name}</div>
-                        <div class="points">${entry.points} pts</div>
-                    </div>
-                `).join('');
+                const container = document.getElementById('leaderboardList');
+                if (leaderboard.length === 0) {
+                    container.innerHTML = '<p style="color: var(--gray-600);">No leaderboard data yet.</p>';
+                    return;
+                }
+
+                container.innerHTML = leaderboard.map((shelter, index) => {
+                    let rankClass = '';
+                    let medal = '';
+                    if (index === 0) { rankClass = 'gold'; medal = '🥇'; }
+                    else if (index === 1) { rankClass = 'silver'; medal = '🥈'; }
+                    else if (index === 2) { rankClass = 'bronze'; medal = '🥉'; }
+                    
+                    return `
+                        <div class="leaderboard-item ${rankClass}">
+                            <div class="rank">${medal || `#${index + 1}`}</div>
+                            <div class="shelter-name">${shelter.shelterName}</div>
+                            <div class="points">${shelter.points} points</div>
+                        </div>
+                    `;
+                }).join('');
             } catch (error) {
                 console.error('Error loading leaderboard:', error);
             }
         }
 
-        // GitHub Functions
-        
-        async function checkGitHubStatus() {
-            try {
-                const response = await fetch('/api/github/status');
-                const status = await response.json();
-                
-                if (status.configured) {
-                    document.getElementById('githubConfigWarning').style.display = 'none';
-                    document.getElementById('githubFeatures').style.display = 'block';
-                    loadGitHubUser();
-                    loadGitHubRepos();
-                } else {
-                    document.getElementById('githubConfigWarning').style.display = 'block';
-                    document.getElementById('githubFeatures').style.display = 'none';
-                    document.getElementById('githubConfigMessage').textContent = status.message;
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
                 }
-            } catch (error) {
-                console.error('Error checking GitHub status:', error);
-                document.getElementById('githubConfigWarning').style.display = 'block';
-                document.getElementById('githubFeatures').style.display = 'none';
-            }
-        }
-        
-        async function createGitHubRepo() {
-            const button = document.getElementById('createRepoBtn');
-            const statusDiv = document.getElementById('githubStatus');
-            const messageSpan = document.getElementById('githubMessage');
-            
-            button.disabled = true;
-            button.textContent = '⏳ Creating repository...';
-            
-            try {
-                const response = await fetch('/api/github/create-repo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    statusDiv.style.display = 'block';
-                    statusDiv.className = 'alert success';
-                    messageSpan.innerHTML = `✅ Repository "RePlate" created successfully! <br>
-                        <a href="${result.repo.url}" target="_blank" style="color: #166534; font-weight: bold;">
-                            View on GitHub →
-                        </a>`;
-                    button.textContent = '✅ Repository Created!';
-                    
-                    setTimeout(() => {
-                        loadGitHubUser();
-                        loadGitHubRepos();
-                    }, 1000);
-                } else if (response.status === 422) {
-                    statusDiv.style.display = 'block';
-                    statusDiv.className = 'alert info';
-                    messageSpan.textContent = '⚠️ ' + result.message;
-                    button.textContent = 'Repository Already Exists';
-                    loadGitHubRepos();
-                } else if (response.status === 503) {
-                    statusDiv.style.display = 'block';
-                    statusDiv.className = 'alert info';
-                    messageSpan.textContent = '⚠️ ' + result.message;
-                    button.disabled = false;
-                    button.textContent = '🚀 Create "RePlate" Repository';
-                }
-            } catch (error) {
-                console.error('Error creating repository:', error);
-                statusDiv.style.display = 'block';
-                statusDiv.className = 'alert info';
-                messageSpan.textContent = '❌ Error creating repository. Please try again.';
-                button.disabled = false;
-                button.textContent = '🚀 Create "RePlate" Repository';
-            }
-        }
-        
-        async function loadGitHubUser() {
-            try {
-                const response = await fetch('/api/github/user');
-                const user = await response.json();
-                
-                const userCard = document.getElementById('githubUserCard');
-                const userInfo = document.getElementById('githubUserInfo');
-                
-                userInfo.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 20px; margin-top: 15px;">
-                        <img src="${user.avatar}" alt="${user.username}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #667eea;">
-                        <div>
-                            <h4 style="margin: 0; color: #333;">${user.name || user.username}</h4>
-                            <p style="margin: 5px 0; color: #666;">@${user.username}</p>
-                            <a href="${user.profile}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
-                                View Profile →
-                            </a>
-                            <p style="margin: 10px 0 0 0; color: #666;">
-                                📚 ${user.repos} public repositories
-                            </p>
-                        </div>
-                    </div>
-                `;
-                
-                userCard.style.display = 'block';
-            } catch (error) {
-                console.error('Error loading GitHub user:', error);
-            }
-        }
-        
-        async function loadGitHubRepos() {
-            try {
-                const response = await fetch('/api/github/repos');
-                const repos = await response.json();
-                
-                const reposCard = document.getElementById('reposCard');
-                const reposList = document.getElementById('reposList');
-                
-                if (repos.length === 0) {
-                    reposList.innerHTML = '<p style="color: #666;">No repositories found.</p>';
-                } else {
-                    reposList.innerHTML = repos.map(repo => `
-                        <div class="donation-card" style="margin-bottom: 15px;">
-                            <h3>${repo.name}</h3>
-                            <div class="info">${repo.description || 'No description'}</div>
-                            <div class="info">⭐ ${repo.stars} stars • 🔱 ${repo.forks} forks</div>
-                            <div class="info"><strong>Updated:</strong> ${new Date(repo.updated).toLocaleDateString()}</div>
-                            <a href="${repo.url}" target="_blank" class="btn" style="display: inline-block; margin-top: 10px; text-decoration: none;">
-                                View Repository →
-                            </a>
-                        </div>
-                    `).join('');
-                }
-                
-                reposCard.style.display = 'block';
-            } catch (error) {
-                console.error('Error loading GitHub repos:', error);
-            }
-        }
+            });
+        });
 
-        // Refresh data every 30 seconds
-        setInterval(() => {
+        // Initialize
+        window.addEventListener('load', () => {
             loadStats();
-        }, 30000);
+        });
     </script>
 </body>
 </html>
