@@ -98,6 +98,25 @@ Real-time matching platform with SMS notifications, carbon tracking, and gamific
 
 ## 🔑 Integration Setup
 
+### GitHub Integration ✅
+**Status:** Connected and ready!
+
+The app now has full GitHub integration:
+- **Create Repository:** One-click creation of "RePlate" public repo
+- **View Profile:** Display GitHub user info with avatar
+- **List Repos:** Show recent repositories with stats
+
+**How to use:**
+1. Click the "🐙 GitHub" tab in the app
+2. Click "Create RePlate Repository" button
+3. Your new public repo will be created instantly
+4. View your GitHub profile and recent repos
+
+**API Endpoints:**
+- `GET /api/github/user` - Get authenticated user info
+- `POST /api/github/create-repo` - Create RePlate repository
+- `GET /api/github/repos` - List user's repositories
+
 ### Twilio SMS (Optional but Recommended)
 **Status:** Integration dismissed by user - manual setup required
 
