@@ -436,6 +436,7 @@
             <button class="tab-button" onclick="showTab('matches')">🤝 Matches</button>
             <button class="tab-button" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
             <button class="tab-button" onclick="showTab('impact')">🌍 Impact</button>
+            <button class="tab-button" onclick="showTab('github')">🐙 GitHub</button>
             <button class="tab-button" onclick="showTab('about')">ℹ️ About</button>
         </div>
 
@@ -542,6 +543,41 @@
             </div>
         </div>
 
+        <!-- GitHub -->
+        <div id="github" class="tab-content">
+            <div class="dashboard">
+                <h2>🐙 GitHub Integration</h2>
+                
+                <div class="alert info" id="githubStatus" style="display: none;">
+                    <span id="githubMessage"></span>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📦 Create Your Hackathon Repository</h3>
+                    <p>Create a public GitHub repository named <strong>"RePlate"</strong> for your hackathon project. This will help you:</p>
+                    <ul style="margin: 15px 0;">
+                        <li>Version control your code</li>
+                        <li>Share your project with judges and teammates</li>
+                        <li>Showcase your work on your GitHub profile</li>
+                        <li>Enable collaboration with others</li>
+                    </ul>
+                    <button class="btn" onclick="createGitHubRepo()" id="createRepoBtn">
+                        🚀 Create "RePlate" Repository
+                    </button>
+                </div>
+
+                <div class="feature-card" id="githubUserCard" style="display: none;">
+                    <h3>👤 Your GitHub Profile</h3>
+                    <div id="githubUserInfo"></div>
+                </div>
+
+                <div class="feature-card" id="reposCard" style="display: none;">
+                    <h3>📚 Your Recent Repositories</h3>
+                    <div id="reposList"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- About -->
         <div id="about" class="tab-content">
             <div class="dashboard">
@@ -635,6 +671,9 @@
                 loadLeaderboard();
             } else if (tabName === 'matches') {
                 loadMatches();
+            } else if (tabName === 'github') {
+                loadGitHubUser();
+                loadGitHubRepos();
             }
         }
 
@@ -830,6 +869,114 @@
                 `).join('');
             } catch (error) {
                 console.error('Error loading leaderboard:', error);
+            }
+        }
+
+        // GitHub Functions
+        
+        async function createGitHubRepo() {
+            const button = document.getElementById('createRepoBtn');
+            const statusDiv = document.getElementById('githubStatus');
+            const messageSpan = document.getElementById('githubMessage');
+            
+            button.disabled = true;
+            button.textContent = '⏳ Creating repository...';
+            
+            try {
+                const response = await fetch('/api/github/create-repo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'alert success';
+                    messageSpan.innerHTML = `✅ Repository "RePlate" created successfully! <br>
+                        <a href="${result.repo.url}" target="_blank" style="color: #166534; font-weight: bold;">
+                            View on GitHub →
+                        </a>`;
+                    button.textContent = '✅ Repository Created!';
+                    
+                    setTimeout(() => {
+                        loadGitHubUser();
+                        loadGitHubRepos();
+                    }, 1000);
+                } else if (response.status === 422) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'alert info';
+                    messageSpan.textContent = '⚠️ ' + result.message;
+                    button.textContent = 'Repository Already Exists';
+                    loadGitHubRepos();
+                }
+            } catch (error) {
+                console.error('Error creating repository:', error);
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'alert info';
+                messageSpan.textContent = '❌ Error creating repository. Please try again.';
+                button.disabled = false;
+                button.textContent = '🚀 Create "RePlate" Repository';
+            }
+        }
+        
+        async function loadGitHubUser() {
+            try {
+                const response = await fetch('/api/github/user');
+                const user = await response.json();
+                
+                const userCard = document.getElementById('githubUserCard');
+                const userInfo = document.getElementById('githubUserInfo');
+                
+                userInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 20px; margin-top: 15px;">
+                        <img src="${user.avatar}" alt="${user.username}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #667eea;">
+                        <div>
+                            <h4 style="margin: 0; color: #333;">${user.name || user.username}</h4>
+                            <p style="margin: 5px 0; color: #666;">@${user.username}</p>
+                            <a href="${user.profile}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                                View Profile →
+                            </a>
+                            <p style="margin: 10px 0 0 0; color: #666;">
+                                📚 ${user.repos} public repositories
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                userCard.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading GitHub user:', error);
+            }
+        }
+        
+        async function loadGitHubRepos() {
+            try {
+                const response = await fetch('/api/github/repos');
+                const repos = await response.json();
+                
+                const reposCard = document.getElementById('reposCard');
+                const reposList = document.getElementById('reposList');
+                
+                if (repos.length === 0) {
+                    reposList.innerHTML = '<p style="color: #666;">No repositories found.</p>';
+                } else {
+                    reposList.innerHTML = repos.map(repo => `
+                        <div class="donation-card" style="margin-bottom: 15px;">
+                            <h3>${repo.name}</h3>
+                            <div class="info">${repo.description || 'No description'}</div>
+                            <div class="info">⭐ ${repo.stars} stars • 🔱 ${repo.forks} forks</div>
+                            <div class="info"><strong>Updated:</strong> ${new Date(repo.updated).toLocaleDateString()}</div>
+                            <a href="${repo.url}" target="_blank" class="btn" style="display: inline-block; margin-top: 10px; text-decoration: none;">
+                                View Repository →
+                            </a>
+                        </div>
+                    `).join('');
+                }
+                
+                reposCard.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading GitHub repos:', error);
             }
         }
 

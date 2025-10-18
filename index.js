@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const NodeCache = require('node-cache');
+const { getUncachableGitHubClient } = require('./github-client');
 
 const app = express();
 const PORT = 5000;
@@ -216,6 +217,91 @@ app.get('/api/leaderboard', (req, res) => {
     .map(s => ({ name: s.name, points: s.points || 0 }))
     .sort((a, b) => b.points - a.points);
   res.json(leaderboard);
+});
+
+// GitHub Integration Routes
+
+// Get GitHub user info
+app.get('/api/github/user', async (req, res) => {
+  try {
+    const octokit = await getUncachableGitHubClient();
+    const { data } = await octokit.rest.users.getAuthenticated();
+    res.json({
+      username: data.login,
+      name: data.name,
+      avatar: data.avatar_url,
+      profile: data.html_url,
+      repos: data.public_repos
+    });
+  } catch (error) {
+    console.error('GitHub API error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch GitHub user info' });
+  }
+});
+
+// Create RePlate repository
+app.post('/api/github/create-repo', async (req, res) => {
+  try {
+    const octokit = await getUncachableGitHubClient();
+    
+    const repoData = {
+      name: 'RePlate',
+      description: '🍽️ RePlate - Connecting restaurants with local shelters to reduce food waste and carbon emissions. Built for hackathons with real-time SMS matching, carbon tracking, and gamification.',
+      homepage: 'https://replate-app.com',
+      private: false,
+      has_issues: true,
+      has_projects: true,
+      has_wiki: true,
+      auto_init: true
+    };
+
+    const { data } = await octokit.rest.repos.createForAuthenticatedUser(repoData);
+    
+    res.json({
+      success: true,
+      repo: {
+        name: data.name,
+        url: data.html_url,
+        clone_url: data.clone_url,
+        description: data.description
+      }
+    });
+  } catch (error) {
+    if (error.status === 422) {
+      res.status(422).json({ 
+        error: 'Repository "RePlate" already exists',
+        message: 'The repository has already been created. Check your GitHub account.'
+      });
+    } else {
+      console.error('GitHub API error:', error.message);
+      res.status(500).json({ error: 'Failed to create repository' });
+    }
+  }
+});
+
+// Get user's repositories
+app.get('/api/github/repos', async (req, res) => {
+  try {
+    const octokit = await getUncachableGitHubClient();
+    const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+      sort: 'updated',
+      per_page: 10
+    });
+    
+    const repos = data.map(repo => ({
+      name: repo.name,
+      url: repo.html_url,
+      description: repo.description,
+      stars: repo.stargazers_count,
+      forks: repo.forks_count,
+      updated: repo.updated_at
+    }));
+    
+    res.json(repos);
+  } catch (error) {
+    console.error('GitHub API error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch repositories' });
+  }
 });
 
 // Helper Functions
