@@ -15,25 +15,29 @@ async function getAccessToken() {
     : null;
 
   if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+    throw new Error('GitHub connector not available in this environment');
   }
 
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=github',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
+  try {
+    connectionSettings = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=github',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
+        }
       }
+    ).then(res => res.json()).then(data => data.items?.[0]);
+
+    const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
+
+    if (!connectionSettings || !accessToken) {
+      throw new Error('GitHub not connected');
     }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
-
-  if (!connectionSettings || !accessToken) {
-    throw new Error('GitHub not connected');
+    return accessToken;
+  } catch (error) {
+    throw new Error('GitHub connector not configured');
   }
-  return accessToken;
 }
 
 async function getUncachableGitHubClient() {
@@ -41,4 +45,13 @@ async function getUncachableGitHubClient() {
   return new Octokit({ auth: accessToken });
 }
 
-module.exports = { getUncachableGitHubClient };
+async function isGitHubConfigured() {
+  try {
+    await getAccessToken();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+module.exports = { getUncachableGitHubClient, isGitHubConfigured };

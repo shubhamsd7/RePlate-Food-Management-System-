@@ -548,32 +548,44 @@
             <div class="dashboard">
                 <h2>🐙 GitHub Integration</h2>
                 
-                <div class="alert info" id="githubStatus" style="display: none;">
-                    <span id="githubMessage"></span>
+                <div class="alert info" id="githubConfigWarning" style="display: none;">
+                    <strong>⚠️ GitHub Not Configured</strong><br>
+                    <span id="githubConfigMessage">The GitHub connector is not set up. This feature works on Replit with the GitHub integration enabled.</span>
+                    <p style="margin-top: 10px;">
+                        <strong>To enable this feature:</strong><br>
+                        • On Replit: Use the GitHub connector in the integrations panel<br>
+                        • The app works great without this - all core features are available!
+                    </p>
                 </div>
+                
+                <div id="githubFeatures">
+                    <div class="alert info" id="githubStatus" style="display: none;">
+                        <span id="githubMessage"></span>
+                    </div>
 
-                <div class="feature-card">
-                    <h3>📦 Create Your Hackathon Repository</h3>
-                    <p>Create a public GitHub repository named <strong>"RePlate"</strong> for your hackathon project. This will help you:</p>
-                    <ul style="margin: 15px 0;">
-                        <li>Version control your code</li>
-                        <li>Share your project with judges and teammates</li>
-                        <li>Showcase your work on your GitHub profile</li>
-                        <li>Enable collaboration with others</li>
-                    </ul>
-                    <button class="btn" onclick="createGitHubRepo()" id="createRepoBtn">
-                        🚀 Create "RePlate" Repository
-                    </button>
-                </div>
+                    <div class="feature-card">
+                        <h3>📦 Create Your Hackathon Repository</h3>
+                        <p>Create a public GitHub repository named <strong>"RePlate"</strong> for your hackathon project. This will help you:</p>
+                        <ul style="margin: 15px 0;">
+                            <li>Version control your code</li>
+                            <li>Share your project with judges and teammates</li>
+                            <li>Showcase your work on your GitHub profile</li>
+                            <li>Enable collaboration with others</li>
+                        </ul>
+                        <button class="btn" onclick="createGitHubRepo()" id="createRepoBtn">
+                            🚀 Create "RePlate" Repository
+                        </button>
+                    </div>
 
-                <div class="feature-card" id="githubUserCard" style="display: none;">
-                    <h3>👤 Your GitHub Profile</h3>
-                    <div id="githubUserInfo"></div>
-                </div>
+                    <div class="feature-card" id="githubUserCard" style="display: none;">
+                        <h3>👤 Your GitHub Profile</h3>
+                        <div id="githubUserInfo"></div>
+                    </div>
 
-                <div class="feature-card" id="reposCard" style="display: none;">
-                    <h3>📚 Your Recent Repositories</h3>
-                    <div id="reposList"></div>
+                    <div class="feature-card" id="reposCard" style="display: none;">
+                        <h3>📚 Your Recent Repositories</h3>
+                        <div id="reposList"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -672,8 +684,7 @@
             } else if (tabName === 'matches') {
                 loadMatches();
             } else if (tabName === 'github') {
-                loadGitHubUser();
-                loadGitHubRepos();
+                checkGitHubStatus();
             }
         }
 
@@ -874,6 +885,28 @@
 
         // GitHub Functions
         
+        async function checkGitHubStatus() {
+            try {
+                const response = await fetch('/api/github/status');
+                const status = await response.json();
+                
+                if (status.configured) {
+                    document.getElementById('githubConfigWarning').style.display = 'none';
+                    document.getElementById('githubFeatures').style.display = 'block';
+                    loadGitHubUser();
+                    loadGitHubRepos();
+                } else {
+                    document.getElementById('githubConfigWarning').style.display = 'block';
+                    document.getElementById('githubFeatures').style.display = 'none';
+                    document.getElementById('githubConfigMessage').textContent = status.message;
+                }
+            } catch (error) {
+                console.error('Error checking GitHub status:', error);
+                document.getElementById('githubConfigWarning').style.display = 'block';
+                document.getElementById('githubFeatures').style.display = 'none';
+            }
+        }
+        
         async function createGitHubRepo() {
             const button = document.getElementById('createRepoBtn');
             const statusDiv = document.getElementById('githubStatus');
@@ -909,6 +942,12 @@
                     messageSpan.textContent = '⚠️ ' + result.message;
                     button.textContent = 'Repository Already Exists';
                     loadGitHubRepos();
+                } else if (response.status === 503) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.className = 'alert info';
+                    messageSpan.textContent = '⚠️ ' + result.message;
+                    button.disabled = false;
+                    button.textContent = '🚀 Create "RePlate" Repository';
                 }
             } catch (error) {
                 console.error('Error creating repository:', error);

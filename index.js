@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const NodeCache = require('node-cache');
-const { getUncachableGitHubClient } = require('./github-client');
+const { getUncachableGitHubClient, isGitHubConfigured } = require('./github-client');
 
 const app = express();
 const PORT = 5000;
@@ -221,9 +221,28 @@ app.get('/api/leaderboard', (req, res) => {
 
 // GitHub Integration Routes
 
+// Check if GitHub is configured
+app.get('/api/github/status', async (req, res) => {
+  const configured = await isGitHubConfigured();
+  res.json({ 
+    configured,
+    message: configured 
+      ? 'GitHub is connected and ready' 
+      : 'GitHub connector not configured. This feature is available on Replit with GitHub integration enabled.'
+  });
+});
+
 // Get GitHub user info
 app.get('/api/github/user', async (req, res) => {
   try {
+    const configured = await isGitHubConfigured();
+    if (!configured) {
+      return res.status(503).json({ 
+        error: 'GitHub not configured',
+        message: 'Please set up the GitHub connector in Replit to use this feature.'
+      });
+    }
+    
     const octokit = await getUncachableGitHubClient();
     const { data } = await octokit.rest.users.getAuthenticated();
     res.json({
@@ -235,13 +254,24 @@ app.get('/api/github/user', async (req, res) => {
     });
   } catch (error) {
     console.error('GitHub API error:', error.message);
-    res.status(500).json({ error: 'Failed to fetch GitHub user info' });
+    res.status(503).json({ 
+      error: 'GitHub not configured',
+      message: 'Please set up the GitHub connector in Replit to use this feature.'
+    });
   }
 });
 
 // Create RePlate repository
 app.post('/api/github/create-repo', async (req, res) => {
   try {
+    const configured = await isGitHubConfigured();
+    if (!configured) {
+      return res.status(503).json({ 
+        error: 'GitHub not configured',
+        message: 'Please set up the GitHub connector in Replit to use this feature.'
+      });
+    }
+    
     const octokit = await getUncachableGitHubClient();
     
     const repoData = {
@@ -274,7 +304,10 @@ app.post('/api/github/create-repo', async (req, res) => {
       });
     } else {
       console.error('GitHub API error:', error.message);
-      res.status(500).json({ error: 'Failed to create repository' });
+      res.status(503).json({ 
+        error: 'GitHub not configured',
+        message: 'Please set up the GitHub connector in Replit to use this feature.'
+      });
     }
   }
 });
@@ -282,6 +315,14 @@ app.post('/api/github/create-repo', async (req, res) => {
 // Get user's repositories
 app.get('/api/github/repos', async (req, res) => {
   try {
+    const configured = await isGitHubConfigured();
+    if (!configured) {
+      return res.status(503).json({ 
+        error: 'GitHub not configured',
+        message: 'Please set up the GitHub connector in Replit to use this feature.'
+      });
+    }
+    
     const octokit = await getUncachableGitHubClient();
     const { data } = await octokit.rest.repos.listForAuthenticatedUser({
       sort: 'updated',
@@ -300,7 +341,10 @@ app.get('/api/github/repos', async (req, res) => {
     res.json(repos);
   } catch (error) {
     console.error('GitHub API error:', error.message);
-    res.status(500).json({ error: 'Failed to fetch repositories' });
+    res.status(503).json({ 
+      error: 'GitHub not configured',
+      message: 'Please set up the GitHub connector in Replit to use this feature.'
+    });
   }
 });
 

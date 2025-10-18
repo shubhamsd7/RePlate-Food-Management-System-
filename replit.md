@@ -99,23 +99,31 @@ Real-time matching platform with SMS notifications, carbon tracking, and gamific
 ## 🔑 Integration Setup
 
 ### GitHub Integration ✅
-**Status:** Connected and ready!
+**Status:** Connected and ready! (With graceful fallback if not configured)
 
-The app now has full GitHub integration:
+The app now has full GitHub integration with proper error handling:
 - **Create Repository:** One-click creation of "RePlate" public repo
 - **View Profile:** Display GitHub user info with avatar
 - **List Repos:** Show recent repositories with stats
+- **Graceful Degradation:** Shows helpful message when GitHub isn't configured
 
 **How to use:**
 1. Click the "🐙 GitHub" tab in the app
-2. Click "Create RePlate Repository" button
-3. Your new public repo will be created instantly
-4. View your GitHub profile and recent repos
+2. If GitHub is configured: Click "Create RePlate Repository" button to instantly create your repo
+3. If GitHub is NOT configured: See helpful instructions on how to enable it
+4. **Important:** The app works perfectly without GitHub - all core features remain available!
 
 **API Endpoints:**
-- `GET /api/github/user` - Get authenticated user info
-- `POST /api/github/create-repo` - Create RePlate repository
-- `GET /api/github/repos` - List user's repositories
+- `GET /api/github/status` - Check if GitHub is configured
+- `GET /api/github/user` - Get authenticated user info (returns 503 if not configured)
+- `POST /api/github/create-repo` - Create RePlate repository (returns 503 if not configured)
+- `GET /api/github/repos` - List user's repositories (returns 503 if not configured)
+
+**Error Handling:**
+- All endpoints check configuration status before attempting operations
+- Frontend displays clear messages when GitHub isn't available
+- No crashes or errors - just informative guidance
+- Core app functionality unaffected by GitHub status
 
 ### Twilio SMS (Optional but Recommended)
 **Status:** Integration dismissed by user - manual setup required
