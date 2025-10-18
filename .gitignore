@@ -131,3 +131,10 @@ dist
 
 # Replit debugger
 .breakpoints
+
+# Replit-specific files (keep local, don't push to GitHub)
+.replit
+replit.nix
+.config/
+.upm/
+generated-icon.png
