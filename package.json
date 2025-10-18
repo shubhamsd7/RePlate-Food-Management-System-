@@ -14,10 +14,12 @@
     "@octokit/rest": "^22.0.0",
     "@types/node": "^22.13.11",
     "axios": "^1.12.2",
+    "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "node-cache": "^5.1.2",
     "pg": "^8.16.3",
     "twilio": "^5.10.3"

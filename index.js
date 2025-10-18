@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
 const db = require('./database');
 const { getUncachableGitHubClient, isGitHubConfigured } = require('./github-client');
 
@@ -9,9 +11,26 @@ const app = express();
 const PORT = 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Secure session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'replate-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/attached_assets', express.static(path.join(__dirname, 'attached_assets')));
 
@@ -389,6 +408,133 @@ app.get('/api/github/repos', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch repositories' });
   }
 });
+
+// Authentication Routes
+
+// Restaurant Signup
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { businessName, email, password, phone, address } = req.body;
+    
+    if (!businessName || !email || !password) {
+      return res.status(400).json({ error: 'Business name, email, and password are required' });
+    }
+    
+    // Check if email already exists
+    const existing = await db.query('SELECT id FROM restaurant_users WHERE email = $1', [email]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+    
+    // Create restaurant user
+    const result = await db.query(`
+      INSERT INTO restaurant_users (business_name, email, password_hash, phone, address)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, business_name as "businessName", email, phone, address, created_at as "createdAt"
+    `, [businessName, email, passwordHash, phone || null, address || null]);
+    
+    const user = result.rows[0];
+    
+    // Set session
+    req.session.userId = user.id;
+    req.session.userType = 'restaurant';
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
+// Restaurant Login
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    // Find user
+    const result = await db.query(`
+      SELECT id, business_name as "businessName", email, password_hash as "passwordHash", 
+             phone, address, business_hours as "businessHours", cuisine_type as "cuisineType"
+      FROM restaurant_users 
+      WHERE email = $1
+    `, [email]);
+    
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    const user = result.rows[0];
+    
+    // Verify password
+    const validPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Remove password hash from response
+    delete user.passwordHash;
+    
+    // Set session
+    req.session.userId = user.id;
+    req.session.userType = 'restaurant';
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Failed to login' });
+  }
+});
+
+// Logout
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
+    res.json({ success: true });
+  });
+});
+
+// Get current user
+app.get('/api/auth/me', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
+  try {
+    const result = await db.query(`
+      SELECT id, business_name as "businessName", email, phone, address, 
+             business_hours as "businessHours", cuisine_type as "cuisineType", 
+             created_at as "createdAt"
+      FROM restaurant_users 
+      WHERE id = $1
+    `, [req.session.userId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({ user: result.rows[0] });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// Middleware to check authentication
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  next();
+}
 
 // Helper Functions
 
