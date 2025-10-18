@@ -7,6 +7,22 @@ interface Props {
   onNavigate: (view: View) => void;
 }
 
+const allergenOptions = [
+  { value: 'dairy', label: '🥛 Dairy' },
+  { value: 'gluten', label: '🌾 Gluten' },
+  { value: 'nuts', label: '🥜 Nuts' },
+  { value: 'soy', label: '🫘 Soy' },
+  { value: 'eggs', label: '🥚 Eggs' },
+  { value: 'shellfish', label: '🦐 Shellfish' },
+];
+
+const dietaryOptions = [
+  { value: 'vegetarian', label: '🥗 Vegetarian' },
+  { value: 'vegan', label: '🌱 Vegan' },
+  { value: 'halal', label: '🕌 Halal' },
+  { value: 'kosher', label: '✡️ Kosher' },
+];
+
 export default function RestaurantDashboard({ onNavigate }: Props) {
   const { user, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(!user);
@@ -158,14 +174,14 @@ export default function RestaurantDashboard({ onNavigate }: Props) {
             <div className="form-group">
               <label>Allergen Information</label>
               <div className="checkbox-group">
-                {['dairy', 'gluten', 'nuts', 'soy', 'eggs', 'shellfish'].map(allergen => (
-                  <label key={allergen}>
+                {allergenOptions.map(option => (
+                  <label key={option.value}>
                     <input
                       type="checkbox"
-                      checked={formData.allergens.includes(allergen)}
-                      onChange={() => handleCheckboxChange('allergens', allergen)}
+                      checked={formData.allergens.includes(option.value)}
+                      onChange={() => handleCheckboxChange('allergens', option.value)}
                     />
-                    Contains {allergen.charAt(0).toUpperCase() + allergen.slice(1)}
+                    {option.label}
                   </label>
                 ))}
               </div>
@@ -174,14 +190,14 @@ export default function RestaurantDashboard({ onNavigate }: Props) {
             <div className="form-group">
               <label>Dietary Information</label>
               <div className="checkbox-group">
-                {['vegetarian', 'vegan', 'halal', 'kosher'].map(diet => (
-                  <label key={diet}>
+                {dietaryOptions.map(option => (
+                  <label key={option.value}>
                     <input
                       type="checkbox"
-                      checked={formData.dietary.includes(diet)}
-                      onChange={() => handleCheckboxChange('dietary', diet)}
+                      checked={formData.dietary.includes(option.value)}
+                      onChange={() => handleCheckboxChange('dietary', option.value)}
                     />
-                    {diet.charAt(0).toUpperCase() + diet.slice(1)}
+                    {option.label}
                   </label>
                 ))}
               </div>
