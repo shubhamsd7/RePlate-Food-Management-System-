@@ -138,3 +138,14 @@ replit.nix
 .config/
 .upm/
 generated-icon.png
+# React + TypeScript build
+dist/
+.vite/
+*.tsbuildinfo
+
+# TypeScript
+*.ts.map
+*.tsx.map
+
+# Vite
+vite.config.ts.timestamp-*
