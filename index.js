@@ -87,10 +87,14 @@ initializeData();
 
 // API Routes
 
-// Get all available donations
+// Get all donations (including matched ones)
 app.get('/api/donations', (req, res) => {
   const donations = dataCache.get('donations') || [];
-  res.json(donations.filter(d => d.status === 'available'));
+  const donationsWithClaimedFlag = donations.map(d => ({
+    ...d,
+    claimed: d.status === 'matched'
+  }));
+  res.json(donationsWithClaimedFlag);
 });
 
 // Get all shelters

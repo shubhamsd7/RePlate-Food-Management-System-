@@ -1057,11 +1057,11 @@
                 const stats = await response.json();
                 
                 animateCounter('heroMeals', stats.totalMealsSaved || 0, '+');
-                animateCounter('heroCarbon', stats.totalCarbonSaved || 0, ' lbs');
+                animateCounter('heroCarbon', parseFloat(stats.totalCarbonSaved) || 0, ' lbs');
                 animateCounter('heroPartners', (stats.totalDonations || 0) + (stats.activeShelters || 0), '+');
                 
                 document.getElementById('impactMeals').textContent = stats.totalMealsSaved || 0;
-                document.getElementById('impactCarbon').textContent = (stats.totalCarbonSaved || 0).toFixed(1) + ' kg';
+                document.getElementById('impactCarbon').textContent = (parseFloat(stats.totalCarbonSaved) || 0).toFixed(1) + ' kg';
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
@@ -1151,8 +1151,8 @@
                         <div class="food-type">${donation.foodType}</div>
                         <div class="info">📦 ${donation.quantity} meals</div>
                         <div class="info">⏱️ Expires: ${new Date(donation.expiresAt).toLocaleString()}</div>
-                        <div class="info">🌱 Impact: ${donation.carbonImpact.toFixed(2)} kg CO₂</div>
-                        <div class="info">📍 ${donation.address}</div>
+                        <div class="info">🌱 Impact: ${donation.carbonSaved.toFixed(2)} kg CO₂</div>
+                        <div class="info">📍 ${donation.location ? donation.location.address : 'N/A'}</div>
                         ${donation.claimed ? '<div class="info" style="color: var(--emerald); font-weight: 600;">✅ Claimed</div>' : '<div class="info" style="color: var(--amber); font-weight: 600;">⏳ Available</div>'}
                     </div>
                 `).join('');
@@ -1181,8 +1181,8 @@
                         <div class="food-type">${donation.foodType}</div>
                         <div class="info">📦 ${donation.quantity} meals</div>
                         <div class="info">⏱️ Expires: ${new Date(donation.expiresAt).toLocaleString()}</div>
-                        <div class="info">🌱 Impact: ${donation.carbonImpact.toFixed(2)} kg CO₂</div>
-                        <div class="info">📍 ${donation.address}</div>
+                        <div class="info">🌱 Impact: ${donation.carbonSaved.toFixed(2)} kg CO₂</div>
+                        <div class="info">📍 ${donation.location ? donation.location.address : 'N/A'}</div>
                         <button class="cta-button" onclick="claimDonation('${donation.id}')">🤝 Claim Donation</button>
                     </div>
                 `).join('');
