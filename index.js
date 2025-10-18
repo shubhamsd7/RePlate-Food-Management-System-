@@ -2,14 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const NodeCache = require('node-cache');
+const db = require('./database');
 const { getUncachableGitHubClient, isGitHubConfigured } = require('./github-client');
 
 const app = express();
 const PORT = 5000;
-
-// Cache for storing data (simulating a database)
-const dataCache = new NodeCache({ stdTTL: 3600 });
 
 // Middleware
 app.use(cors());
@@ -17,338 +14,378 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize sample data
-function initializeData() {
-  if (!dataCache.get('donations')) {
-    dataCache.set('donations', [
-      {
-        id: 1,
-        restaurantName: "Tony's Pizza Palace",
-        foodType: "Pizza, Pasta",
-        quantity: "20 meals",
-        location: { lat: 37.7749, lng: -122.4194, address: "123 Market St, San Francisco, CA" },
-        expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-        status: "available",
-        carbonSaved: 15.2,
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 2,
-        restaurantName: "Green Leaf Bistro",
-        foodType: "Salads, Sandwiches",
-        quantity: "15 meals",
-        location: { lat: 37.7849, lng: -122.4094, address: "456 Mission St, San Francisco, CA" },
-        expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
-        status: "available",
-        carbonSaved: 11.5,
-        createdAt: new Date().toISOString()
-      }
-    ]);
-  }
-
-  if (!dataCache.get('shelters')) {
-    dataCache.set('shelters', [
-      {
-        id: 1,
-        name: "Hope Center",
-        capacity: "50 people",
-        location: { lat: 37.7739, lng: -122.4312, address: "789 Howard St, San Francisco, CA" },
-        contactPhone: "+1234567890",
-        needs: "Any food welcome",
-        points: 145
-      },
-      {
-        id: 2,
-        name: "Community Care Shelter",
-        capacity: "80 people",
-        location: { lat: 37.7839, lng: -122.4212, address: "321 Folsom St, San Francisco, CA" },
-        contactPhone: "+1234567891",
-        needs: "Hot meals preferred",
-        points: 230
-      }
-    ]);
-  }
-
-  if (!dataCache.get('matches')) {
-    dataCache.set('matches', []);
-  }
-
-  if (!dataCache.get('stats')) {
-    dataCache.set('stats', {
-      totalMealsSaved: 342,
-      totalCarbonSaved: 256.5,
-      totalDonations: 87,
-      activeShelters: 12
-    });
-  }
-}
-
-initializeData();
-
 // API Routes
 
 // Get all donations (including matched ones)
-app.get('/api/donations', (req, res) => {
-  const donations = dataCache.get('donations') || [];
-  const donationsWithClaimedFlag = donations.map(d => ({
-    ...d,
-    claimed: d.status === 'matched'
-  }));
-  res.json(donationsWithClaimedFlag);
+app.get('/api/donations', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT id, restaurant_name as "restaurantName", food_type as "foodType", 
+             quantity, address, latitude as lat, longitude as lng,
+             expires_at as "expiresAt", status, carbon_saved as "carbonSaved",
+             created_at as "createdAt"
+      FROM donations
+      ORDER BY created_at DESC
+    `);
+    
+    const donations = result.rows.map(d => ({
+      ...d,
+      location: { lat: parseFloat(d.lat), lng: parseFloat(d.lng), address: d.address },
+      claimed: d.status === 'matched',
+      carbonSaved: parseFloat(d.carbonSaved),
+      quantity: d.quantity
+    }));
+    
+    res.json(donations);
+  } catch (error) {
+    console.error('Error fetching donations:', error);
+    res.status(500).json({ error: 'Failed to fetch donations' });
+  }
 });
 
 // Get all shelters
-app.get('/api/shelters', (req, res) => {
-  const shelters = dataCache.get('shelters') || [];
-  res.json(shelters);
+app.get('/api/shelters', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT id, name, capacity, address, latitude, longitude,
+             contact_phone as "contactPhone", needs, points,
+             created_at as "createdAt"
+      FROM shelters
+      ORDER BY points DESC
+    `);
+    
+    const shelters = result.rows.map(s => ({
+      ...s,
+      location: { lat: parseFloat(s.latitude), lng: parseFloat(s.longitude), address: s.address }
+    }));
+    
+    res.json(shelters);
+  } catch (error) {
+    console.error('Error fetching shelters:', error);
+    res.status(500).json({ error: 'Failed to fetch shelters' });
+  }
 });
 
 // Create new donation
-app.post('/api/donations', (req, res) => {
-  const donations = dataCache.get('donations') || [];
-  const { restaurantName, foodType, quantity, location, expiresAt } = req.body;
-  
-  // Calculate carbon savings based on quantity
-  const mealCount = parseInt(quantity) || 10;
-  const carbonSaved = (mealCount * 0.76).toFixed(1); // Average 0.76 kg CO2 per meal
-
-  const newDonation = {
-    id: donations.length + 1,
-    restaurantName,
-    foodType,
-    quantity,
-    location,
-    expiresAt,
-    status: 'available',
-    carbonSaved: parseFloat(carbonSaved),
-    createdAt: new Date().toISOString()
-  };
-
-  donations.push(newDonation);
-  dataCache.set('donations', donations);
-
-  // Update stats
-  updateStats('donation', parseFloat(carbonSaved));
-
-  res.json({ success: true, donation: newDonation });
+app.post('/api/donations', async (req, res) => {
+  try {
+    const { restaurantName, foodType, quantity, address, expiresIn } = req.body;
+    
+    // Demo coordinates (in production, use Google Maps Geocoding API)
+    const demoCoords = {
+      lat: 37.7749 + (Math.random() - 0.5) * 0.05,
+      lng: -122.4194 + (Math.random() - 0.5) * 0.05
+    };
+    
+    // Calculate carbon savings (0.76 kg CO2 per meal)
+    const mealCount = parseInt(quantity) || 10;
+    const carbonSaved = (mealCount * 0.76).toFixed(1);
+    
+    // Calculate expiration time
+    const expiresAt = new Date(Date.now() + (expiresIn || 4) * 60 * 60 * 1000);
+    
+    const result = await db.query(`
+      INSERT INTO donations (restaurant_name, food_type, quantity, address, latitude, longitude, expires_at, carbon_saved)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id, restaurant_name as "restaurantName", food_type as "foodType", 
+                quantity, status, carbon_saved as "carbonSaved", created_at as "createdAt"
+    `, [restaurantName, foodType, mealCount, address || 'Demo Address', demoCoords.lat, demoCoords.lng, expiresAt, carbonSaved]);
+    
+    const donation = result.rows[0];
+    
+    // Update global stats
+    await updateStats('donation', parseFloat(carbonSaved), mealCount);
+    
+    res.json({ success: true, donation });
+  } catch (error) {
+    console.error('Error creating donation:', error);
+    res.status(500).json({ error: 'Failed to create donation' });
+  }
 });
 
 // Create match between donation and shelter
-app.post('/api/matches', (req, res) => {
-  const { donationId, shelterId, shelterPhone } = req.body;
-  const donations = dataCache.get('donations') || [];
-  const shelters = dataCache.get('shelters') || [];
-  const matches = dataCache.get('matches') || [];
-
-  const donation = donations.find(d => d.id === donationId);
-  const shelter = shelters.find(s => s.id === shelterId);
-
-  if (!donation || !shelter) {
-    return res.status(404).json({ error: 'Donation or shelter not found' });
+app.post('/api/matches', async (req, res) => {
+  try {
+    const { donationId, shelterId, shelterName } = req.body;
+    
+    // Get donation
+    const donationResult = await db.query('SELECT * FROM donations WHERE id = $1', [donationId]);
+    if (donationResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Donation not found' });
+    }
+    const donation = donationResult.rows[0];
+    
+    // Get shelter (either by ID or create new one with name)
+    let shelter;
+    if (shelterId) {
+      const shelterResult = await db.query('SELECT * FROM shelters WHERE id = $1', [shelterId]);
+      if (shelterResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Shelter not found' });
+      }
+      shelter = shelterResult.rows[0];
+    } else if (shelterName) {
+      // Check if shelter exists by name, if not create it
+      let shelterResult = await db.query('SELECT * FROM shelters WHERE name = $1', [shelterName]);
+      if (shelterResult.rows.length === 0) {
+        // Create new shelter
+        shelterResult = await db.query(`
+          INSERT INTO shelters (name, capacity, address, latitude, longitude, contact_phone, needs, points)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          RETURNING *
+        `, [shelterName, 'Not specified', 'Not specified', 37.7749, -122.4194, '', 'All food types', 0]);
+      }
+      shelter = shelterResult.rows[0];
+    } else {
+      return res.status(400).json({ error: 'Either shelterId or shelterName required' });
+    }
+    
+    // Update donation status
+    await db.query('UPDATE donations SET status = $1 WHERE id = $2', ['matched', donationId]);
+    
+    // Award points to shelter (10 points per pickup)
+    await db.query('UPDATE shelters SET points = points + 10 WHERE id = $1', [shelter.id]);
+    
+    // Create match record
+    const matchResult = await db.query(`
+      INSERT INTO matches (donation_id, shelter_id, restaurant_name, shelter_name, food_type, quantity, carbon_saved)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `, [donationId, shelter.id, donation.restaurant_name, shelter.name, donation.food_type, donation.quantity, donation.carbon_saved]);
+    
+    const match = matchResult.rows[0];
+    
+    // Send SMS notification (if Twilio credentials are configured)
+    sendSMSNotification(shelter.contact_phone, donation, shelter);
+    
+    // Update global stats
+    await updateStats('match', parseFloat(donation.carbon_saved), donation.quantity);
+    
+    res.json({ success: true, match: {
+      id: match.id,
+      donationId: match.donation_id,
+      shelterId: match.shelter_id,
+      restaurantName: match.restaurant_name,
+      shelterName: match.shelter_name,
+      foodType: match.food_type,
+      quantity: match.quantity,
+      carbonSaved: parseFloat(match.carbon_saved),
+      matchedAt: match.matched_at,
+      status: match.status
+    }});
+  } catch (error) {
+    console.error('Error creating match:', error);
+    res.status(500).json({ error: 'Failed to create match' });
   }
-
-  // Update donation status
-  donation.status = 'matched';
-  dataCache.set('donations', donations);
-
-  // Award points to shelter
-  shelter.points = (shelter.points || 0) + 10;
-  dataCache.set('shelters', shelters);
-
-  // Create match record
-  const match = {
-    id: matches.length + 1,
-    donationId,
-    shelterId,
-    restaurantName: donation.restaurantName,
-    shelterName: shelter.name,
-    foodType: donation.foodType,
-    quantity: donation.quantity,
-    carbonSaved: donation.carbonSaved,
-    matchedAt: new Date().toISOString(),
-    status: 'pending_pickup'
-  };
-
-  matches.push(match);
-  dataCache.set('matches', matches);
-
-  // Send SMS notification (if Twilio credentials are configured)
-  sendSMSNotification(shelterPhone, donation, shelter);
-
-  res.json({ success: true, match });
 });
 
 // Get global stats
-app.get('/api/stats', (req, res) => {
-  const stats = dataCache.get('stats') || {};
-  res.json(stats);
+app.get('/api/stats', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT total_meals_saved as "totalMealsSaved", 
+             total_carbon_saved as "totalCarbonSaved",
+             total_donations as "totalDonations",
+             active_shelters as "activeShelters"
+      FROM stats
+      LIMIT 1
+    `);
+    
+    const stats = result.rows[0] || {
+      totalMealsSaved: 0,
+      totalCarbonSaved: 0,
+      totalDonations: 0,
+      activeShelters: 0
+    };
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
 });
 
 // Get matches history
-app.get('/api/matches', (req, res) => {
-  const matches = dataCache.get('matches') || [];
-  res.json(matches);
+app.get('/api/matches', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT id, donation_id as "donationId", shelter_id as "shelterId",
+             restaurant_name as "restaurantName", shelter_name as "shelterName",
+             food_type as "foodType", quantity, carbon_saved as "carbonSaved",
+             matched_at as "matchedAt", status
+      FROM matches
+      ORDER BY matched_at DESC
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching matches:', error);
+    res.status(500).json({ error: 'Failed to fetch matches' });
+  }
 });
 
 // Find nearby shelters for a donation
-app.get('/api/nearby-shelters/:donationId', (req, res) => {
-  const donations = dataCache.get('donations') || [];
-  const shelters = dataCache.get('shelters') || [];
-  const donation = donations.find(d => d.id === parseInt(req.params.donationId));
-
-  if (!donation) {
-    return res.status(404).json({ error: 'Donation not found' });
+app.get('/api/nearby-shelters/:donationId', async (req, res) => {
+  try {
+    const donationResult = await db.query('SELECT * FROM donations WHERE id = $1', [req.params.donationId]);
+    if (donationResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Donation not found' });
+    }
+    
+    const donation = donationResult.rows[0];
+    const sheltersResult = await db.query('SELECT * FROM shelters');
+    
+    // Calculate distances and sort by proximity
+    const nearbyShelters = sheltersResult.rows.map(shelter => {
+      const distance = calculateDistance(
+        donation.latitude,
+        donation.longitude,
+        shelter.latitude,
+        shelter.longitude
+      );
+      return {
+        ...shelter,
+        location: { lat: parseFloat(shelter.latitude), lng: parseFloat(shelter.longitude), address: shelter.address },
+        distance: distance.toFixed(2)
+      };
+    }).sort((a, b) => a.distance - b.distance);
+    
+    res.json(nearbyShelters);
+  } catch (error) {
+    console.error('Error finding nearby shelters:', error);
+    res.status(500).json({ error: 'Failed to find nearby shelters' });
   }
-
-  // Calculate distances and sort by proximity
-  const nearbyShelters = shelters.map(shelter => {
-    const distance = calculateDistance(
-      donation.location.lat,
-      donation.location.lng,
-      shelter.location.lat,
-      shelter.location.lng
-    );
-    return { ...shelter, distance: distance.toFixed(2) };
-  }).sort((a, b) => a.distance - b.distance);
-
-  res.json(nearbyShelters);
 });
 
 // Leaderboard
-app.get('/api/leaderboard', (req, res) => {
-  const shelters = dataCache.get('shelters') || [];
-  const leaderboard = shelters
-    .map(s => ({ name: s.name, points: s.points || 0 }))
-    .sort((a, b) => b.points - a.points);
-  res.json(leaderboard);
-});
-
-// GitHub Integration Routes
-
-// Check if GitHub is configured
-app.get('/api/github/status', async (req, res) => {
-  const configured = await isGitHubConfigured();
-  res.json({ 
-    configured,
-    message: configured 
-      ? 'GitHub is connected and ready' 
-      : 'GitHub connector not configured. This feature is available on Replit with GitHub integration enabled.'
-  });
-});
-
-// Get GitHub user info
-app.get('/api/github/user', async (req, res) => {
+app.get('/api/leaderboard', async (req, res) => {
   try {
-    const configured = await isGitHubConfigured();
-    if (!configured) {
-      return res.status(503).json({ 
-        error: 'GitHub not configured',
-        message: 'Please set up the GitHub connector in Replit to use this feature.'
-      });
-    }
+    const result = await db.query(`
+      SELECT name as "shelterName", points
+      FROM shelters
+      ORDER BY points DESC
+      LIMIT 20
+    `);
     
-    const octokit = await getUncachableGitHubClient();
-    const { data } = await octokit.rest.users.getAuthenticated();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+// Admin Panel - Get all data for analytics
+app.get('/api/admin/dashboard', async (req, res) => {
+  try {
+    const [donations, shelters, matches, stats] = await Promise.all([
+      db.query('SELECT * FROM donations ORDER BY created_at DESC'),
+      db.query('SELECT * FROM shelters ORDER BY points DESC'),
+      db.query('SELECT * FROM matches ORDER BY matched_at DESC'),
+      db.query('SELECT * FROM stats LIMIT 1')
+    ]);
+    
     res.json({
-      username: data.login,
-      name: data.name,
-      avatar: data.avatar_url,
-      profile: data.html_url,
-      repos: data.public_repos
+      donations: donations.rows,
+      shelters: shelters.rows,
+      matches: matches.rows,
+      stats: stats.rows[0] || {}
     });
+  } catch (error) {
+    console.error('Error fetching admin dashboard:', error);
+    res.status(500).json({ error: 'Failed to fetch admin data' });
+  }
+});
+
+// Register new shelter
+app.post('/api/shelters', async (req, res) => {
+  try {
+    const { name, capacity, address, contactPhone, needs } = req.body;
+    
+    // Demo coordinates (in production, use Google Maps Geocoding API)
+    const demoCoords = {
+      lat: 37.7749 + (Math.random() - 0.5) * 0.05,
+      lng: -122.4194 + (Math.random() - 0.5) * 0.05
+    };
+    
+    const result = await db.query(`
+      INSERT INTO shelters (name, capacity, address, latitude, longitude, contact_phone, needs, points)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 0)
+      RETURNING *
+    `, [name, capacity, address, demoCoords.lat, demoCoords.lng, contactPhone, needs]);
+    
+    // Update active shelters count
+    await db.query('UPDATE stats SET active_shelters = (SELECT COUNT(*) FROM shelters)');
+    
+    res.json({ success: true, shelter: result.rows[0] });
+  } catch (error) {
+    console.error('Error registering shelter:', error);
+    res.status(500).json({ error: 'Failed to register shelter' });
+  }
+});
+
+// GitHub API Routes
+app.get('/api/github/status', (req, res) => {
+  res.json({ configured: isGitHubConfigured() });
+});
+
+app.get('/api/github/user', async (req, res) => {
+  if (!isGitHubConfigured()) {
+    return res.status(503).json({ 
+      error: 'GitHub connector not configured',
+      message: 'Please set up the GitHub integration in your Replit project settings.'
+    });
+  }
+
+  try {
+    const client = getUncachableGitHubClient();
+    const { data: user } = await client.users.getAuthenticated();
+    res.json(user);
   } catch (error) {
     console.error('GitHub API error:', error.message);
-    res.status(503).json({ 
-      error: 'GitHub not configured',
-      message: 'Please set up the GitHub connector in Replit to use this feature.'
-    });
+    res.status(500).json({ error: 'Failed to fetch GitHub user' });
   }
 });
 
-// Create RePlate repository
 app.post('/api/github/create-repo', async (req, res) => {
-  try {
-    const configured = await isGitHubConfigured();
-    if (!configured) {
-      return res.status(503).json({ 
-        error: 'GitHub not configured',
-        message: 'Please set up the GitHub connector in Replit to use this feature.'
-      });
-    }
-    
-    const octokit = await getUncachableGitHubClient();
-    
-    const repoData = {
-      name: 'RePlate',
-      description: '🍽️ RePlate - Connecting restaurants with local shelters to reduce food waste and carbon emissions. Built for hackathons with real-time SMS matching, carbon tracking, and gamification.',
-      homepage: 'https://replate-app.com',
-      private: false,
-      has_issues: true,
-      has_projects: true,
-      has_wiki: true,
-      auto_init: true
-    };
-
-    const { data } = await octokit.rest.repos.createForAuthenticatedUser(repoData);
-    
-    res.json({
-      success: true,
-      repo: {
-        name: data.name,
-        url: data.html_url,
-        clone_url: data.clone_url,
-        description: data.description
-      }
+  if (!isGitHubConfigured()) {
+    return res.status(503).json({ 
+      error: 'GitHub connector not configured',
+      message: 'Please set up the GitHub integration in your Replit project settings.'
     });
+  }
+
+  try {
+    const client = getUncachableGitHubClient();
+    const { data: repo } = await client.repos.createForAuthenticatedUser({
+      name: 'RePlate',
+      description: 'Re:Plate - Food Waste Reduction Platform connecting restaurants with local shelters',
+      private: false,
+      auto_init: true
+    });
+    res.json(repo);
   } catch (error) {
-    if (error.status === 422) {
-      res.status(422).json({ 
-        error: 'Repository "RePlate" already exists',
-        message: 'The repository has already been created. Check your GitHub account.'
-      });
-    } else {
-      console.error('GitHub API error:', error.message);
-      res.status(503).json({ 
-        error: 'GitHub not configured',
-        message: 'Please set up the GitHub connector in Replit to use this feature.'
-      });
-    }
+    console.error('GitHub API error:', error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Get user's repositories
 app.get('/api/github/repos', async (req, res) => {
+  if (!isGitHubConfigured()) {
+    return res.status(503).json({ 
+      error: 'GitHub connector not configured',
+      message: 'Please set up the GitHub integration in your Replit project settings.'
+    });
+  }
+
   try {
-    const configured = await isGitHubConfigured();
-    if (!configured) {
-      return res.status(503).json({ 
-        error: 'GitHub not configured',
-        message: 'Please set up the GitHub connector in Replit to use this feature.'
-      });
-    }
-    
-    const octokit = await getUncachableGitHubClient();
-    const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+    const client = getUncachableGitHubClient();
+    const { data: repos } = await client.repos.listForAuthenticatedUser({
       sort: 'updated',
       per_page: 10
     });
-    
-    const repos = data.map(repo => ({
-      name: repo.name,
-      url: repo.html_url,
-      description: repo.description,
-      stars: repo.stargazers_count,
-      forks: repo.forks_count,
-      updated: repo.updated_at
-    }));
-    
     res.json(repos);
   } catch (error) {
     console.error('GitHub API error:', error.message);
-    res.status(503).json({ 
-      error: 'GitHub not configured',
-      message: 'Please set up the GitHub connector in Replit to use this feature.'
-    });
+    res.status(500).json({ error: 'Failed to fetch repositories' });
   }
 });
 
@@ -366,13 +403,26 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function updateStats(type, carbonSaved = 0) {
-  const stats = dataCache.get('stats') || {};
-  if (type === 'donation') {
-    stats.totalDonations = (stats.totalDonations || 0) + 1;
-    stats.totalCarbonSaved = ((stats.totalCarbonSaved || 0) + carbonSaved).toFixed(1);
+async function updateStats(type, carbonSaved = 0, meals = 0) {
+  try {
+    if (type === 'donation') {
+      await db.query(`
+        UPDATE stats 
+        SET total_donations = total_donations + 1,
+            total_carbon_saved = total_carbon_saved + $1,
+            updated_at = CURRENT_TIMESTAMP
+      `, [carbonSaved]);
+    } else if (type === 'match') {
+      await db.query(`
+        UPDATE stats 
+        SET total_meals_saved = total_meals_saved + $1,
+            total_carbon_saved = total_carbon_saved + $2,
+            updated_at = CURRENT_TIMESTAMP
+      `, [meals, carbonSaved]);
+    }
+  } catch (error) {
+    console.error('Error updating stats:', error);
   }
-  dataCache.set('stats', stats);
 }
 
 function sendSMSNotification(phone, donation, shelter) {
@@ -384,7 +434,7 @@ function sendSMSNotification(phone, donation, shelter) {
   if (!accountSid || !authToken || !twilioPhone) {
     console.log('📱 SMS would be sent if Twilio credentials were configured');
     console.log(`   To: ${phone}`);
-    console.log(`   Message: New food donation matched! ${donation.quantity} of ${donation.foodType} from ${donation.restaurantName}. Location: ${donation.location.address}`);
+    console.log(`   Message: New food donation matched! ${donation.quantity} of ${donation.food_type} from ${donation.restaurant_name}. Location: ${donation.address}`);
     return;
   }
 
@@ -394,7 +444,7 @@ function sendSMSNotification(phone, donation, shelter) {
 
   client.messages
     .create({
-      body: `🍽️ New food donation matched! ${donation.quantity} of ${donation.foodType} from ${donation.restaurantName}. Location: ${donation.location.address}. Pickup before ${new Date(donation.expiresAt).toLocaleTimeString()}.`,
+      body: `🍽️ New food donation matched! ${donation.quantity} meals of ${donation.food_type} from ${donation.restaurant_name}. Location: ${donation.address}. Pickup before ${new Date(donation.expires_at).toLocaleTimeString()}.`,
       from: twilioPhone,
       to: phone
     })
@@ -407,8 +457,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serve admin panel
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Food Rescue App running on http://0.0.0.0:${PORT}`);
+  console.log(`🚀 Re:Plate App running on http://0.0.0.0:${PORT}`);
   console.log(`📊 Dashboard available at http://0.0.0.0:${PORT}`);
+  console.log(`🔧 Admin panel at http://0.0.0.0:${PORT}/admin`);
   console.log(`🌍 Helping reduce food waste and carbon emissions!`);
 });

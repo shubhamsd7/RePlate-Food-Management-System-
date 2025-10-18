@@ -58,7 +58,7 @@ The app will run on `http://localhost:5000`
 - **Frontend:** Vanilla JavaScript (responsive)
 - **SMS:** Twilio API
 - **Maps:** Google Maps API
-- **Database:** NodeCache (in-memory) → Firebase-ready
+- **Database:** PostgreSQL (production-ready)
 - **Version Control:** GitHub API integration
 
 ---
@@ -153,6 +153,9 @@ Create your hackathon repository with one click.
 Create a `.env` file (see `.env.example`):
 
 ```bash
+# PostgreSQL Database (Required)
+DATABASE_URL=postgresql://user:password@host:port/database
+
 # Twilio SMS (Optional)
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
@@ -160,10 +163,6 @@ TWILIO_PHONE_NUMBER=your_phone_number
 
 # Google Maps (Optional)
 GOOGLE_MAPS_API_KEY=your_api_key
-
-# Firebase (Optional)
-FIREBASE_API_KEY=your_firebase_key
-FIREBASE_PROJECT_ID=your_project_id
 ```
 
 **Note:** App works without these - SMS is logged to console in demo mode.
