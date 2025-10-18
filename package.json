@@ -1,11 +1,14 @@
 {
-  "name": "nodejs",
+  "name": "replate-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "Food waste reduction platform connecting restaurants with shelters",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "server": "node index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +16,9 @@
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "@types/node": "^22.13.11",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.0.4",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
@@ -22,6 +28,10 @@
     "express-session": "^1.18.2",
     "node-cache": "^5.1.2",
     "pg": "^8.16.3",
-    "twilio": "^5.10.3"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "twilio": "^5.10.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10"
   }
 }
