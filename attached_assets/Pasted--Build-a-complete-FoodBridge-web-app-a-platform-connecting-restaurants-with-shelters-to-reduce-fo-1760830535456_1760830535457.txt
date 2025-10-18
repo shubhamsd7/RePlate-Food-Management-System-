@@ -1,0 +1,108 @@
+**Build a complete FoodBridge web app - a platform connecting restaurants with shelters to reduce food waste.**
+
+**PROJECT OVERVIEW:**
+Create a Next.js app with 4 main pages: Landing page, Restaurant Dashboard, Shelter Dashboard, and Impact Tracking page.
+
+**TECH STACK:**
+
+- Next.js 14+ with App Router
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui components
+- Lucide React icons
+
+
+**COLOR SCHEME:**
+
+- Primary: Green (`#10b981` / emerald-500) for sustainability
+- Accent: Amber (`#f59e0b` / amber-500) for warmth
+- Neutrals: Slate grays, white backgrounds
+- Use semantic tokens: bg-background, text-foreground, bg-card, etc.
+
+
+**PAGES TO BUILD:**
+
+**1. LANDING PAGE (app/page.tsx):**
+
+- Hero section with headline "Turn Food Waste Into Food Security" and two CTA buttons: "I'm a Restaurant" (links to /restaurant) and "I'm a Shelter" (links to /shelter)
+- Animated stats section showing: "50,000+ Meals Saved", "125 Tons CO2 Prevented", "200+ Restaurants", "150+ Shelters"
+- "How It Works" section with 4 steps: Post Surplus → Smart Matching → Instant Notification → Track Impact
+- Impact section highlighting environmental, social, and economic benefits
+- Dual CTA cards at bottom for restaurants and shelters
+- Professional header with logo and navigation
+- Footer with links
+
+
+**2. RESTAURANT DASHBOARD (app/restaurant/page.tsx):**
+
+- Header with restaurant name "Green Leaf Bistro" and notification bell
+- Stats cards showing: Total Donations (127), Active Listings (3), Meals Saved (2,450), CO2 Prevented (6.1 tons)
+- "Create New Donation" form with fields: Food Type (dropdown), Quantity, Unit, Expiration Time, Dietary Info (checkboxes for Vegetarian, Vegan, Gluten-Free, Halal, Kosher), Special Instructions
+- "Active Donations" list showing current listings with status badges, claim buttons, and delete options
+- "Your Impact This Month" section with metrics: 45 donations, 680 meals, 1.7 tons CO2, 12 shelters helped
+- Use Card components, Form components, and Badges
+
+
+**3. SHELTER DASHBOARD (app/shelter/page.tsx):**
+
+- Header with shelter name "Hope Community Center" and notifications
+- "Current Needs" overview cards showing capacity and urgent needs
+- "Available Donations Nearby" section with cards showing: Restaurant name, food type, quantity, distance, expiration time, dietary tags, and "Claim Donation" buttons
+- "Scheduled Pickups" list with upcoming pickups, addresses, and navigation buttons
+- "Inventory Status" showing current stock levels with progress bars
+- Use geolocation indicators (distance in miles)
+
+
+**4. IMPACT TRACKING PAGE (app/impact/page.tsx):**
+
+- Large hero stats: Total Meals Saved, CO2 Prevented, Food Waste Diverted, People Fed
+- Line chart showing "Meals Saved Over Time" (use Recharts)
+- Environmental impact breakdown: CO2 savings, water saved, landfill waste prevented
+- "Top Contributors" leaderboard showing restaurants ranked by donations
+- Community impact metrics
+- Use Chart components from shadcn/ui
+
+
+**DESIGN REQUIREMENTS:**
+
+- Mobile-first responsive design
+- Use flexbox for layouts (not grid unless necessary)
+- Consistent spacing with Tailwind spacing scale (p-4, gap-6, etc.)
+- Hover effects on interactive elements
+- Loading states and empty states
+- Professional, clean aesthetic inspired by modern SaaS dashboards
+- Proper contrast for accessibility
+- Use semantic HTML (main, section, header tags)
+
+
+**COMPONENTS TO CREATE:**
+
+- Reusable stat cards with icons
+- Donation cards with badges
+- Form components with validation
+- Navigation header
+- Impact metric displays
+- Charts for data visualization
+
+
+**KEY FEATURES:**
+
+- All navigation links should work between pages
+- Forms should have proper input types and placeholders
+- Use mock data for demonstrations
+- Include distance calculations (mock: 0.8 mi, 1.2 mi, etc.)
+- Show dietary restriction tags as badges
+- Display timestamps and expiration times
+- Include action buttons (Claim, Delete, Navigate, etc.)
+
+
+**IMPORTANT:**
+
+- Make sure ALL navigation links work (/, /restaurant, /shelter, /impact)
+- Use Next.js Link components for navigation
+- Include proper TypeScript types
+- Use "use client" directive where needed for interactive components
+- Follow Next.js 14 App Router conventions
+
+
+Build the complete app with all pages fully functional and navigable.
