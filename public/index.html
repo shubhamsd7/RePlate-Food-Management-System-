@@ -680,6 +680,172 @@
         .fade-in {
             animation: fadeIn 0.6s ease-out;
         }
+
+        /* Authentication Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray-600);
+            transition: color 0.3s;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: var(--emerald);
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-form input, .auth-form select {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .auth-form input:focus, .auth-form select:focus {
+            outline: none;
+            border-color: var(--emerald);
+        }
+
+        .auth-form button[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .auth-form button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .auth-form p {
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--gray-600);
+        }
+
+        .auth-form p a {
+            color: var(--emerald);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-form p a:hover {
+            text-decoration: underline;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--gray-700);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .user-welcome {
+            background: linear-gradient(135deg, var(--emerald-dark) 0%, var(--amber-dark) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-welcome h3 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: var(--emerald-dark);
+        }
     </style>
 </head>
 <body>
@@ -932,42 +1098,108 @@
         </div>
     </footer>
 
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <h2>🍽️ Restaurant Login</h2>
+                <form onsubmit="handleLogin(event)">
+                    <input type="email" name="email" placeholder="Email Address" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Login to Dashboard</button>
+                </form>
+                <p>Don't have an account? <a onclick="showSignupForm()">Sign up now</a></p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signupForm" class="auth-form" style="display:none;">
+                <h2>🏪 Register Your Restaurant</h2>
+                <form onsubmit="handleSignup(event)">
+                    <input type="text" name="businessName" placeholder="Restaurant/Business Name" required>
+                    <input type="email" name="email" placeholder="Email Address" required>
+                    <input type="password" name="password" placeholder="Password (min 6 characters)" minlength="6" required>
+                    <input type="tel" name="phone" placeholder="Phone Number" required>
+                    <input type="text" name="address" placeholder="Business Address" required>
+                    <button type="submit">Create Account</button>
+                </form>
+                <p>Already have an account? <a onclick="showLoginForm()">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Restaurant Dashboard -->
     <div id="restaurant-dashboard" class="dashboard-section">
         <div class="dashboard-container">
             <a href="#" class="back-button" onclick="showLanding(); return false;">← Back to Home</a>
-            <div class="dashboard-header">
-                <h1>🍽️ Restaurant Dashboard</h1>
-                <p>Post your surplus food and make a difference</p>
+            
+            <!-- User Welcome Banner -->
+            <div class="user-welcome">
+                <div>
+                    <h3 id="restaurantWelcome">Welcome!</h3>
+                    <p id="restaurantEmail" style="margin: 0; opacity: 0.9;"></p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
 
             <div class="form-card">
-                <h2 style="margin-bottom: 1.5rem;">Create Donation</h2>
-                <div class="alert info">
-                    📍 Note: For demo purposes, enter any address. In production, Google Maps API will auto-geocode your location.
-                </div>
-                <form onsubmit="createDonation(); return false;">
+                <h2 style="margin-bottom: 1.5rem;">📤 Post Available Meal</h2>
+                <form id="mealPostingForm" onsubmit="createEnhancedDonation(event); return false;">
                     <div class="form-group">
-                        <label>Restaurant Name</label>
-                        <input type="text" id="restaurantName" placeholder="e.g., Tony's Pizza Palace" required>
+                        <label>Meal Category</label>
+                        <select name="mealCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="breakfast">🍳 Breakfast</option>
+                            <option value="lunch">🍔 Lunch</option>
+                            <option value="dinner">🍝 Dinner</option>
+                            <option value="snacks">🥨 Snacks/Appetizers</option>
+                            <option value="desserts">🍰 Desserts</option>
+                            <option value="beverages">☕ Beverages</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>Food Type</label>
-                        <input type="text" id="foodType" placeholder="e.g., Pizza, Pasta, Salads" required>
+                        <label>Food Description</label>
+                        <input type="text" name="foodType" placeholder="e.g., Margarita Pizza, Caesar Salad, Pasta Alfredo" required>
                     </div>
                     <div class="form-group">
-                        <label>Quantity (number of meals)</label>
-                        <input type="number" id="quantity" placeholder="e.g., 20" min="1" required>
+                        <label>Number of Meals</label>
+                        <input type="number" name="quantity" placeholder="e.g., 25" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label>Address</label>
-                        <input type="text" id="address" placeholder="e.g., 123 Main St, San Francisco, CA" required>
+                        <label>Preparation Time</label>
+                        <input type="text" name="prepTime" placeholder="e.g., Freshly prepared, 2 hours ago">
+                    </div>
+                    <div class="form-group">
+                        <label style="margin-bottom: 0.5rem; display: block;">Allergen Information:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="allergens" value="dairy"> Contains Dairy</label>
+                            <label><input type="checkbox" name="allergens" value="gluten"> Contains Gluten</label>
+                            <label><input type="checkbox" name="allergens" value="nuts"> Contains Nuts</label>
+                            <label><input type="checkbox" name="allergens" value="soy"> Contains Soy</label>
+                            <label><input type="checkbox" name="allergens" value="eggs"> Contains Eggs</label>
+                            <label><input type="checkbox" name="allergens" value="shellfish"> Contains Shellfish</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="margin-bottom: 0.5rem; display: block;">Dietary Tags:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="dietary" value="vegetarian"> 🥗 Vegetarian</label>
+                            <label><input type="checkbox" name="dietary" value="vegan"> 🌱 Vegan</label>
+                            <label><input type="checkbox" name="dietary" value="halal"> 🕌 Halal</label>
+                            <label><input type="checkbox" name="dietary" value="kosher"> ✡️ Kosher</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Pickup Address</label>
+                        <input type="text" name="address" id="restaurantAddress" placeholder="Your restaurant address" required>
                     </div>
                     <div class="form-group">
                         <label>Expires In (hours)</label>
-                        <input type="number" id="expiresIn" placeholder="e.g., 4" min="1" max="24" value="4" required>
+                        <input type="number" name="expiresIn" placeholder="e.g., 4" min="1" max="24" value="4" required>
                     </div>
-                    <button type="submit" class="cta-button">🎁 Create Donation</button>
+                    <button type="submit" class="cta-button">📤 Post Meal</button>
                 </form>
                 <div id="donationSuccess"></div>
             </div>
@@ -1031,6 +1263,201 @@
     <script>
         // API Base URL
         const API_URL = window.location.origin;
+        let currentUser = null;
+
+        // Authentication Functions
+
+        // Check if user is logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/auth/me`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    return data.user;
+                }
+                currentUser = null;
+                return null;
+            } catch (error) {
+                currentUser = null;
+                return null;
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            const loginData = {
+                email: formData.get('email'),
+                password: formData.get('password')
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(loginData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUser = data.user;
+                    closeAuthModal();
+                    showRestaurantDashboard(data.user);
+                    form.reset();
+                } else {
+                    alert(data.error || 'Login failed. Please check your credentials.');
+                }
+            } catch (error) {
+                alert('Login error. Please try again.');
+            }
+        }
+
+        // Handle Signup
+        async function handleSignup(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            const signupData = {
+                businessName: formData.get('businessName'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                phone: formData.get('phone'),
+                address: formData.get('address')
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(signupData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUser = data.user;
+                    alert('✅ Account created successfully! Welcome to Re:Plate!');
+                    closeAuthModal();
+                    showRestaurantDashboard(data.user);
+                    form.reset();
+                } else {
+                    alert(data.error || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                alert('Signup error. Please try again.');
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                currentUser = null;
+                showLanding();
+            } catch (error) {
+                console.error('Logout error:', error);
+                showLanding();
+            }
+        }
+
+        // Modal controls
+        function showLoginForm() {
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        function showSignupForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+            showLoginForm(); // Reset to login form
+        }
+
+        // Show restaurant dashboard with user data
+        function showRestaurantDashboard(user) {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'block';
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            
+            // Display user info
+            document.getElementById('restaurantWelcome').textContent = `Welcome, ${user.businessName}! 🍽️`;
+            document.getElementById('restaurantEmail').textContent = user.email;
+            
+            // Pre-fill address if available
+            if (user.address) {
+                document.getElementById('restaurantAddress').value = user.address;
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Enhanced donation creation with new fields
+        async function createEnhancedDonation(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Collect allergens and dietary info
+            const allergens = Array.from(formData.getAll('allergens'));
+            const dietary = Array.from(formData.getAll('dietary'));
+            
+            const donationData = {
+                restaurantName: currentUser ? currentUser.businessName : 'Anonymous',
+                foodType: formData.get('foodType'),
+                quantity: parseInt(formData.get('quantity')),
+                mealCategory: formData.get('mealCategory'),
+                allergens: allergens.join(', ') || 'None specified',
+                dietaryInfo: dietary.join(', ') || 'None specified',
+                preparationTime: formData.get('prepTime') || 'Not specified',
+                address: formData.get('address'),
+                expiresIn: parseInt(formData.get('expiresIn'))
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/api/donations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(donationData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('donationSuccess').innerHTML = `
+                        <div class="alert success" style="margin-top: 1rem; padding: 1rem; background: #d1fae5; border-radius: 8px; color: #065f46;">
+                            ✅ Meal posted successfully!<br>
+                            <strong>Environmental Impact:</strong> ${result.donation.carbonSaved} kg CO₂ saved<br>
+                            <strong>Meals:</strong> ${result.donation.quantity} meals available for pickup
+                        </div>
+                    `;
+                    form.reset();
+                    setTimeout(() => {
+                        document.getElementById('donationSuccess').innerHTML = '';
+                    }, 5000);
+                } else {
+                    alert(result.error || 'Failed to post meal');
+                }
+            } catch (error) {
+                alert('Error posting meal. Please try again.');
+            }
+        }
 
         // Animated Counter
         function animateCounter(id, end, suffix = '') {
@@ -1067,22 +1494,28 @@
             }
         }
 
-        // Show/Hide Sections
-        function showDashboard(type) {
-            document.getElementById('landing-page').style.display = 'none';
-            document.getElementById('restaurant-dashboard').style.display = 'none';
-            document.getElementById('shelter-dashboard').style.display = 'none';
-            
+        // Show/Hide Sections with Authentication Check
+        async function showDashboard(type) {
             if (type === 'restaurant') {
-                document.getElementById('restaurant-dashboard').classList.add('active');
-                loadRestaurantDonations();
+                // Check if restaurant user is logged in
+                const user = await checkAuth();
+                if (!user) {
+                    // Show login modal
+                    document.getElementById('authModal').style.display = 'block';
+                    showLoginForm();
+                } else {
+                    // User is logged in, show dashboard
+                    showRestaurantDashboard(user);
+                }
             } else if (type === 'shelter') {
+                // Shelter dashboard (no auth required for MVP)
+                document.getElementById('landing-page').style.display = 'none';
+                document.getElementById('restaurant-dashboard').style.display = 'none';
                 document.getElementById('shelter-dashboard').classList.add('active');
                 loadDonations();
                 loadLeaderboard();
+                window.scrollTo(0, 0);
             }
-            
-            window.scrollTo(0, 0);
         }
 
         function showLanding() {
