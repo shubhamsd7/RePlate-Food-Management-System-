@@ -13,6 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/attached_assets', express.static(path.join(__dirname, 'attached_assets')));
 
 // API Routes
 
@@ -460,6 +461,25 @@ app.get('/', (req, res) => {
 // Serve admin panel
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// SPA Fallback - Serve index.html for all non-API, non-admin routes
+// This enables client-side routing and prevents 404 errors on footer links
+app.use((req, res, next) => {
+  // Skip if it's an API route
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  // Skip if it's the admin route (already handled)
+  if (req.path === '/admin') {
+    return next();
+  }
+  // Skip if it's a static file (has extension)
+  if (path.extname(req.path)) {
+    return next();
+  }
+  // Serve index.html for all other routes (SPA routing)
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
