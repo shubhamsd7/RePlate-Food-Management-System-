@@ -1785,11 +1785,7 @@
 
         // Load shelter's claimed donations
         async function loadClaimedDonations() {
-            console.log('📋 loadClaimedDonations called, currentShelterUser:', currentShelterUser);
-            if (!currentShelterUser) {
-                console.log('⚠️ currentShelterUser is null, skipping load');
-                return;
-            }
+            console.log('📋 loadClaimedDonations called');
             
             try {
                 console.log('📡 Fetching shelter donations from API...');
@@ -1799,17 +1795,22 @@
                 
                 console.log('📡 Response status:', response.status);
                 
+                const container = document.getElementById('claimedDonationsList');
+                
                 if (!response.ok) {
                     console.error('❌ API returned error status:', response.status);
-                    const container = document.getElementById('claimedDonationsList');
-                    container.innerHTML = '<p style="color: var(--gray-600);">Error loading donations. Please refresh the page.</p>';
+                    if (response.status === 401) {
+                        console.log('ℹ️ Not authenticated - hiding claimed donations section');
+                        container.innerHTML = '<p style="color: var(--gray-600);">Please log in to see your claimed donations.</p>';
+                    } else {
+                        container.innerHTML = '<p style="color: var(--gray-600);">Error loading donations. Please refresh the page.</p>';
+                    }
                     return;
                 }
                 
                 const donations = await response.json();
                 console.log('📦 Received donations:', donations);
                 
-                const container = document.getElementById('claimedDonationsList');
                 if (!donations || donations.length === 0) {
                     console.log('ℹ️ No claimed donations found');
                     container.innerHTML = '<p style="color: var(--gray-600);">You haven\'t claimed any donations yet!</p>';
