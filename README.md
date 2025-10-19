@@ -1,4 +1,13 @@
+Project Link: https://bit.ly/replateapp-demo
+
 RePlate - Food Waste Reduction Platform
+
+## Inspiration 
+
+Today, our team was brainstorming ideas for our project when we noticed something that sparked our inspiration. During lunch, we noticed a significant amount of surplus food left over, and later, we heard that even more food was left over after the second round. We didn’t know whether the food was reused or just thrown away, which made us think deeply about how much food actually goes to waste.
+At our university, Texas State, we’ve also seen dining hall staff dispose of fresh, untouched food at midnight. Watching good food being thrown away while knowing that so many people struggle to get a single meal was eye-opening. That moment motivated us to think of a way to connect surplus food with people who truly need it.
+
+We researched the issue further and discovered that food waste is a massive global problem, while hunger remains a critical challenge for millions. Seeing those statistics made us realize that even a small initiative could make a big difference. That’s when we decided to build our project around reducing food waste and helping redistribute surplus food to the needy.
 
 ## 🎯 The Problem
 
