@@ -1656,6 +1656,11 @@
                         </div>
                     `;
                     form.reset();
+                    
+                    // Reload donations list and stats
+                    loadRestaurantDonations();
+                    loadStats();
+                    
                     setTimeout(() => {
                         document.getElementById('donationSuccess').innerHTML = '';
                     }, 5000);
