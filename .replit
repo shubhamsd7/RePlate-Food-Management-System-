@@ -27,23 +27,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Backend"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Server"
-
-[[workflows.workflow]]
-name = "Backend"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node index.js"
-waitForPort = 3000
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [[workflows.workflow]]
 name = "Server"
@@ -66,5 +50,5 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 41355
+localPort = 44429
 externalPort = 3001
