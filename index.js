@@ -342,6 +342,123 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
+// NOTIFICATION ENDPOINTS
+
+// Get all notifications for the logged-in user
+app.get('/api/notifications', async (req, res) => {
+  try {
+    let userType, userId;
+    
+    if (req.session.userId) {
+      userType = 'restaurant';
+      userId = req.session.userId;
+    } else if (req.session.shelterUserId) {
+      userType = 'shelter';
+      userId = req.session.shelterUserId;
+    } else {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    const result = await db.query(`
+      SELECT id, message, type, related_donation_id as "relatedDonationId", 
+             is_read as "isRead", created_at as "createdAt"
+      FROM notifications
+      WHERE user_type = $1 AND user_id = $2
+      ORDER BY created_at DESC
+      LIMIT 50
+    `, [userType, userId]);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// Get unread notification count
+app.get('/api/notifications/unread-count', async (req, res) => {
+  try {
+    let userType, userId;
+    
+    if (req.session.userId) {
+      userType = 'restaurant';
+      userId = req.session.userId;
+    } else if (req.session.shelterUserId) {
+      userType = 'shelter';
+      userId = req.session.shelterUserId;
+    } else {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    const result = await db.query(`
+      SELECT COUNT(*) as count
+      FROM notifications
+      WHERE user_type = $1 AND user_id = $2 AND is_read = FALSE
+    `, [userType, userId]);
+    
+    res.json({ count: parseInt(result.rows[0].count) });
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    res.status(500).json({ error: 'Failed to fetch unread count' });
+  }
+});
+
+// Mark a specific notification as read
+app.post('/api/notifications/mark-read/:id', async (req, res) => {
+  try {
+    let userType, userId;
+    
+    if (req.session.userId) {
+      userType = 'restaurant';
+      userId = req.session.userId;
+    } else if (req.session.shelterUserId) {
+      userType = 'shelter';
+      userId = req.session.shelterUserId;
+    } else {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    await db.query(`
+      UPDATE notifications
+      SET is_read = TRUE
+      WHERE id = $1 AND user_type = $2 AND user_id = $3
+    `, [req.params.id, userType, userId]);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+// Mark all notifications as read
+app.post('/api/notifications/mark-all-read', async (req, res) => {
+  try {
+    let userType, userId;
+    
+    if (req.session.userId) {
+      userType = 'restaurant';
+      userId = req.session.userId;
+    } else if (req.session.shelterUserId) {
+      userType = 'shelter';
+      userId = req.session.shelterUserId;
+    } else {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    await db.query(`
+      UPDATE notifications
+      SET is_read = TRUE
+      WHERE user_type = $1 AND user_id = $2 AND is_read = FALSE
+    `, [userType, userId]);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    res.status(500).json({ error: 'Failed to mark all notifications as read' });
+  }
+});
+
 // Admin Panel - Get all data for analytics
 app.get('/api/admin/dashboard', async (req, res) => {
   try {
