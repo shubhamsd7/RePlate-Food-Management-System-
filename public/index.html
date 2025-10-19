@@ -1785,20 +1785,38 @@
 
         // Load shelter's claimed donations
         async function loadClaimedDonations() {
-            if (!currentShelterUser) return;
+            console.log('📋 loadClaimedDonations called, currentShelterUser:', currentShelterUser);
+            if (!currentShelterUser) {
+                console.log('⚠️ currentShelterUser is null, skipping load');
+                return;
+            }
             
             try {
+                console.log('📡 Fetching shelter donations from API...');
                 const response = await fetch(`${API_URL}/api/shelter-donations`, {
                     credentials: 'include'
                 });
+                
+                console.log('📡 Response status:', response.status);
+                
+                if (!response.ok) {
+                    console.error('❌ API returned error status:', response.status);
+                    const container = document.getElementById('claimedDonationsList');
+                    container.innerHTML = '<p style="color: var(--gray-600);">Error loading donations. Please refresh the page.</p>';
+                    return;
+                }
+                
                 const donations = await response.json();
+                console.log('📦 Received donations:', donations);
                 
                 const container = document.getElementById('claimedDonationsList');
-                if (donations.length === 0) {
+                if (!donations || donations.length === 0) {
+                    console.log('ℹ️ No claimed donations found');
                     container.innerHTML = '<p style="color: var(--gray-600);">You haven\'t claimed any donations yet!</p>';
                     return;
                 }
 
+                console.log('✅ Displaying', donations.length, 'claimed donations');
                 container.innerHTML = donations.map(donation => `
                     <div class="donation-card">
                         <h3>${donation.restaurantName}</h3>
@@ -1811,7 +1829,7 @@
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error loading claimed donations:', error);
+                console.error('❌ Error loading claimed donations:', error);
             }
         }
 
