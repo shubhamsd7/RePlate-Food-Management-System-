@@ -31,6 +31,14 @@ app.use(session({
   }
 }));
 
+// Disable caching for all responses to ensure real-time data display
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/attached_assets', express.static(path.join(__dirname, 'attached_assets')));
 
@@ -198,23 +206,30 @@ app.post('/api/matches', async (req, res) => {
   }
 });
 
-// Get global stats
+// Get global stats (calculated in real-time from database)
 app.get('/api/stats', async (req, res) => {
   try {
-    const result = await db.query(`
-      SELECT total_meals_saved as "totalMealsSaved", 
-             total_carbon_saved as "totalCarbonSaved",
-             total_donations as "totalDonations",
-             active_shelters as "activeShelters"
-      FROM stats
-      LIMIT 1
+    // Calculate real-time stats from donations table
+    const statsResult = await db.query(`
+      SELECT 
+        COUNT(*) as total_donations,
+        COUNT(CASE WHEN status = 'matched' THEN 1 END) as matched_donations,
+        COALESCE(SUM(CASE WHEN status = 'matched' THEN quantity ELSE 0 END), 0) as total_meals_saved,
+        COALESCE(SUM(CASE WHEN status = 'matched' THEN carbon_saved ELSE 0 END), 0) as total_carbon_saved
+      FROM donations
     `);
     
-    const stats = result.rows[0] || {
-      totalMealsSaved: 0,
-      totalCarbonSaved: 0,
-      totalDonations: 0,
-      activeShelters: 0
+    // Count total shelters
+    const sheltersResult = await db.query(`SELECT COUNT(*) as shelter_count FROM shelters`);
+    
+    const donationStats = statsResult.rows[0];
+    const shelterCount = sheltersResult.rows[0].shelter_count;
+    
+    const stats = {
+      totalMealsSaved: parseInt(donationStats.total_meals_saved) || 0,
+      totalCarbonSaved: parseFloat(donationStats.total_carbon_saved) || 0,
+      totalDonations: parseInt(donationStats.total_donations) || 0,
+      activeShelters: parseInt(shelterCount) || 0
     };
     
     res.json(stats);
