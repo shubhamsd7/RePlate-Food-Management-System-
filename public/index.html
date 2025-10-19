@@ -2090,7 +2090,6 @@
         async function claimDonation(donationId) {
             // Check if shelter is logged in
             if (!currentShelterUser) {
-                alert('Please log in to claim donations!');
                 document.getElementById('shelterAuthModal').style.display = 'block';
                 showShelterLoginForm();
                 return;
@@ -2107,13 +2106,13 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert(`✅ Donation claimed successfully! You earned 10 points.`);
-                    
-                    // Reload all relevant lists
-                    loadDonations();
-                    loadClaimedDonations();
-                    loadLeaderboard();
-                    loadStats();
+                    // Immediately reload all relevant lists for instant feedback
+                    await Promise.all([
+                        loadDonations(),
+                        loadClaimedDonations(),
+                        loadLeaderboard(),
+                        loadStats()
+                    ]);
                 } else {
                     alert(result.error || 'Error claiming donation. It may have already been claimed.');
                 }
@@ -2177,6 +2176,7 @@
             
             // Check if user is logged in and update nav UI
             await checkAuth();
+            await checkShelterAuth();
             updateNavAuthUI();
         });
     </script>
