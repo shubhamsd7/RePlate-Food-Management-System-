@@ -1215,6 +1215,38 @@
         </div>
     </div>
 
+    <!-- Shelter Authentication Modal -->
+    <div id="shelterAuthModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeShelterAuthModal()">&times;</span>
+            
+            <!-- Shelter Login Form -->
+            <div id="shelterLoginForm" class="auth-form">
+                <h2>🏠 Shelter Login</h2>
+                <form onsubmit="handleShelterLogin(event)">
+                    <input type="email" name="email" placeholder="Email Address" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Login to Dashboard</button>
+                </form>
+                <p>Don't have an account? <a onclick="showShelterSignupForm()">Sign up now</a></p>
+            </div>
+            
+            <!-- Shelter Signup Form -->
+            <div id="shelterSignupForm" class="auth-form" style="display:none;">
+                <h2>🏠 Register Your Shelter</h2>
+                <form onsubmit="handleShelterSignup(event)">
+                    <input type="text" name="shelterName" placeholder="Shelter/Organization Name" required>
+                    <input type="email" name="email" placeholder="Email Address" required>
+                    <input type="password" name="password" placeholder="Password (min 6 characters)" minlength="6" required>
+                    <input type="tel" name="phone" placeholder="Phone Number" required>
+                    <input type="text" name="address" placeholder="Shelter Address" required>
+                    <button type="submit">Create Account</button>
+                </form>
+                <p>Already have an account? <a onclick="showShelterLoginForm()">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
     <!-- Restaurant Dashboard -->
     <div id="restaurant-dashboard" class="dashboard-section">
         <div class="dashboard-container">
@@ -1302,6 +1334,16 @@
     <div id="shelter-dashboard" class="dashboard-section">
         <div class="dashboard-container">
             <a href="#" class="back-button" onclick="showLanding(); return false;">← Back to Home</a>
+            
+            <!-- Shelter User Welcome Banner -->
+            <div class="user-welcome" id="shelterWelcomeBanner" style="display:none;">
+                <div>
+                    <h3 id="shelterWelcome">Welcome!</h3>
+                    <p id="shelterEmail" style="margin: 0; opacity: 0.9;"></p>
+                </div>
+                <button class="logout-btn" onclick="logoutShelter()">Logout</button>
+            </div>
+            
             <div class="dashboard-header">
                 <h1>🏠 Shelter Dashboard</h1>
                 <p>Browse and claim available donations</p>
@@ -1309,10 +1351,18 @@
 
             <div class="form-card">
                 <div class="alert info">
-                    📱 When you claim a donation, SMS notifications will be sent (requires Twilio setup).
+                    📱 When you claim a donation, you'll receive pickup details. Please log in to claim donations.
                 </div>
                 <h2 style="margin-bottom: 1.5rem;">Available Donations</h2>
                 <div id="donationsList" class="donation-grid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- My Claimed Donations Section (only visible when logged in) -->
+            <div class="form-card" id="claimedDonationsSection" style="display:none;">
+                <h2 style="margin-bottom: 1.5rem;">My Claimed Donations</h2>
+                <div id="claimedDonationsList" class="donation-grid">
                     <!-- Will be populated by JavaScript -->
                 </div>
             </div>
@@ -1578,6 +1628,189 @@
             }
         }
 
+        // SHELTER AUTHENTICATION FUNCTIONS
+        let currentShelterUser = null;
+
+        // Check if shelter is logged in
+        async function checkShelterAuth() {
+            try {
+                const response = await fetch(`${API_URL}/api/shelter-auth/me`, {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    currentShelterUser = data.user;
+                    return data.user;
+                }
+                currentShelterUser = null;
+                return null;
+            } catch (error) {
+                currentShelterUser = null;
+                return null;
+            }
+        }
+
+        // Shelter login handler
+        async function handleShelterLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/shelter-auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: formData.get('email'),
+                        password: formData.get('password')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentShelterUser = data.user;
+                    closeShelterAuthModal();
+                    showShelterDashboard(data.user);
+                    form.reset();
+                } else {
+                    alert(data.error || 'Login failed. Please check your credentials.');
+                }
+            } catch (error) {
+                alert('Login error. Please try again.');
+            }
+        }
+
+        // Shelter signup handler
+        async function handleShelterSignup(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/shelter-auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        shelterName: formData.get('shelterName'),
+                        email: formData.get('email'),
+                        password: formData.get('password'),
+                        phone: formData.get('phone'),
+                        address: formData.get('address')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentShelterUser = data.user;
+                    alert('✅ Account created successfully! Welcome to Re:Plate!');
+                    closeShelterAuthModal();
+                    showShelterDashboard(data.user);
+                    form.reset();
+                } else {
+                    alert(data.error || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                alert('Signup error. Please try again.');
+            }
+        }
+
+        // Shelter logout
+        async function logoutShelter() {
+            try {
+                await fetch(`${API_URL}/api/shelter-auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                currentShelterUser = null;
+                showLanding();
+            } catch (error) {
+                console.error('Logout error:', error);
+                showLanding();
+            }
+        }
+
+        // Shelter modal controls
+        function showShelterLoginForm() {
+            document.getElementById('shelterSignupForm').style.display = 'none';
+            document.getElementById('shelterLoginForm').style.display = 'block';
+        }
+
+        function showShelterSignupForm() {
+            document.getElementById('shelterLoginForm').style.display = 'none';
+            document.getElementById('shelterSignupForm').style.display = 'block';
+        }
+
+        function closeShelterAuthModal() {
+            document.getElementById('shelterAuthModal').style.display = 'none';
+            showShelterLoginForm(); // Reset to login form
+        }
+
+        // Show shelter dashboard with user data
+        function showShelterDashboard(user) {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').classList.add('active');
+            
+            if (user) {
+                // Show welcome banner
+                document.getElementById('shelterWelcomeBanner').style.display = 'flex';
+                document.getElementById('shelterWelcome').textContent = `Welcome, ${user.shelterName}! 🏠`;
+                document.getElementById('shelterEmail').textContent = user.email;
+                
+                // Show claimed donations section
+                document.getElementById('claimedDonationsSection').style.display = 'block';
+                
+                // Load claimed donations
+                loadClaimedDonations();
+            } else {
+                // Hide welcome banner and claimed donations
+                document.getElementById('shelterWelcomeBanner').style.display = 'none';
+                document.getElementById('claimedDonationsSection').style.display = 'none';
+            }
+            
+            // Load available donations and leaderboard
+            loadDonations();
+            loadLeaderboard();
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Load shelter's claimed donations
+        async function loadClaimedDonations() {
+            if (!currentShelterUser) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/shelter-donations`, {
+                    credentials: 'include'
+                });
+                const donations = await response.json();
+                
+                const container = document.getElementById('claimedDonationsList');
+                if (donations.length === 0) {
+                    container.innerHTML = '<p style="color: var(--gray-600);">You haven\'t claimed any donations yet!</p>';
+                    return;
+                }
+
+                container.innerHTML = donations.map(donation => `
+                    <div class="donation-card">
+                        <h3>${donation.restaurantName}</h3>
+                        <div class="food-type">${donation.foodType}</div>
+                        <div class="info">📦 ${donation.quantity} meals</div>
+                        <div class="info">⏱️ Pickup by: ${new Date(donation.expiresAt).toLocaleString()}</div>
+                        <div class="info">🌱 Impact: ${donation.carbonSaved.toFixed(2)} kg CO₂</div>
+                        <div class="info">📍 ${donation.location ? donation.location.address : 'N/A'}</div>
+                        <div class="info" style="color: var(--emerald); font-weight: 600;">✅ Claimed</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading claimed donations:', error);
+            }
+        }
+
         // Modal controls
         function showLoginForm() {
             document.getElementById('signupForm').style.display = 'none';
@@ -1693,7 +1926,9 @@
         // Load stats and animate
         async function loadStats() {
             try {
-                const response = await fetch(`${API_URL}/api/stats`);
+                const response = await fetch(`${API_URL}/api/stats`, {
+                    credentials: 'include'
+                });
                 const stats = await response.json();
                 
                 animateCounter('heroMeals', stats.totalMealsSaved || 0, '+');
@@ -1721,13 +1956,18 @@
                     showRestaurantDashboard(user);
                 }
             } else if (type === 'shelter') {
-                // Shelter dashboard (no auth required for MVP)
-                document.getElementById('landing-page').style.display = 'none';
-                document.getElementById('restaurant-dashboard').style.display = 'none';
-                document.getElementById('shelter-dashboard').classList.add('active');
-                loadDonations();
-                loadLeaderboard();
-                window.scrollTo(0, 0);
+                // Check if shelter user is logged in
+                const shelterUser = await checkShelterAuth();
+                if (!shelterUser) {
+                    // Show shelter login modal but also show dashboard
+                    document.getElementById('shelterAuthModal').style.display = 'block';
+                    showShelterLoginForm();
+                    // Still show dashboard so they can browse
+                    showShelterDashboard(null);
+                } else {
+                    // User is logged in, show dashboard with user data
+                    showShelterDashboard(shelterUser);
+                }
             }
         }
 
@@ -1787,7 +2027,9 @@
                     ? `${API_URL}/api/donations?restaurantUserId=${currentUser.id}`
                     : `${API_URL}/api/donations`;
                     
-                const response = await fetch(url);
+                const response = await fetch(url, {
+                    credentials: 'include'
+                });
                 const donations = await response.json();
                 
                 const container = document.getElementById('restaurantDonations');
@@ -1815,7 +2057,9 @@
         // Load Available Donations (for shelters)
         async function loadDonations() {
             try {
-                const response = await fetch(`${API_URL}/api/donations`);
+                const response = await fetch(`${API_URL}/api/donations`, {
+                    credentials: 'include'
+                });
                 const donations = await response.json();
                 
                 const available = donations.filter(d => !d.claimed);
@@ -1844,32 +2088,47 @@
 
         // Claim Donation
         async function claimDonation(donationId) {
-            const shelterName = prompt('Enter your shelter name:');
-            if (!shelterName) return;
+            // Check if shelter is logged in
+            if (!currentShelterUser) {
+                alert('Please log in to claim donations!');
+                document.getElementById('shelterAuthModal').style.display = 'block';
+                showShelterLoginForm();
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_URL}/api/matches`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ donationId, shelterName })
+                    credentials: 'include',
+                    body: JSON.stringify({ donationId })
                 });
 
                 const result = await response.json();
-                alert(`✅ Donation claimed successfully! You earned 10 points. SMS notification sent (if Twilio is configured).`);
                 
-                loadDonations();
-                loadLeaderboard();
-                loadStats();
+                if (response.ok) {
+                    alert(`✅ Donation claimed successfully! You earned 10 points.`);
+                    
+                    // Reload all relevant lists
+                    loadDonations();
+                    loadClaimedDonations();
+                    loadLeaderboard();
+                    loadStats();
+                } else {
+                    alert(result.error || 'Error claiming donation. It may have already been claimed.');
+                }
             } catch (error) {
                 console.error('Error claiming donation:', error);
-                alert('Error claiming donation. It may have already been claimed.');
+                alert('Error claiming donation. Please try again.');
             }
         }
 
         // Load Leaderboard
         async function loadLeaderboard() {
             try {
-                const response = await fetch(`${API_URL}/api/leaderboard`);
+                const response = await fetch(`${API_URL}/api/leaderboard`, {
+                    credentials: 'include'
+                });
                 const leaderboard = await response.json();
                 
                 const container = document.getElementById('leaderboardList');

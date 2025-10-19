@@ -148,7 +148,12 @@ app.post('/api/donations', async (req, res) => {
 // Create match between donation and shelter
 app.post('/api/matches', async (req, res) => {
   try {
-    const { donationId, shelterId, shelterName } = req.body;
+    // Require shelter authentication
+    if (!req.session.shelterUserId) {
+      return res.status(401).json({ error: 'Please log in to claim donations' });
+    }
+
+    const { donationId } = req.body;
     
     // Get donation
     const donationResult = await db.query('SELECT * FROM donations WHERE id = $1', [donationId]);
@@ -157,32 +162,42 @@ app.post('/api/matches', async (req, res) => {
     }
     const donation = donationResult.rows[0];
     
-    // Get shelter (either by ID or create new one with name)
-    let shelter;
-    if (shelterId) {
-      const shelterResult = await db.query('SELECT * FROM shelters WHERE id = $1', [shelterId]);
-      if (shelterResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Shelter not found' });
-      }
-      shelter = shelterResult.rows[0];
-    } else if (shelterName) {
-      // Check if shelter exists by name, if not create it
-      let shelterResult = await db.query('SELECT * FROM shelters WHERE name = $1', [shelterName]);
-      if (shelterResult.rows.length === 0) {
-        // Create new shelter
-        shelterResult = await db.query(`
-          INSERT INTO shelters (name, capacity, address, latitude, longitude, contact_phone, needs, points)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          RETURNING *
-        `, [shelterName, 'Not specified', 'Not specified', 37.7749, -122.4194, '', 'All food types', 0]);
-      }
-      shelter = shelterResult.rows[0];
-    } else {
-      return res.status(400).json({ error: 'Either shelterId or shelterName required' });
+    // Check if already claimed
+    if (donation.status === 'matched') {
+      return res.status(400).json({ error: 'Donation already claimed' });
     }
     
-    // Update donation status
-    await db.query('UPDATE donations SET status = $1 WHERE id = $2', ['matched', donationId]);
+    // Get logged-in shelter user
+    const shelterUserResult = await db.query(
+      'SELECT * FROM shelter_users WHERE id = $1',
+      [req.session.shelterUserId]
+    );
+    
+    if (shelterUserResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Shelter user not found' });
+    }
+    
+    const shelterUser = shelterUserResult.rows[0];
+    
+    // Get or create shelter record for leaderboard
+    let shelterResult = await db.query('SELECT * FROM shelters WHERE name = $1', [shelterUser.shelter_name]);
+    let shelter;
+    
+    if (shelterResult.rows.length === 0) {
+      // Create new shelter for leaderboard
+      shelterResult = await db.query(`
+        INSERT INTO shelters (name, capacity, address, latitude, longitude, contact_phone, needs, points)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+      `, [shelterUser.shelter_name, 'Not specified', shelterUser.address || 'Not specified', 37.7749, -122.4194, shelterUser.phone || '', 'All food types', 0]);
+    }
+    shelter = shelterResult.rows[0];
+    
+    // Update donation status and link to shelter user
+    await db.query(
+      'UPDATE donations SET status = $1, shelter_user_id = $2 WHERE id = $3', 
+      ['matched', req.session.shelterUserId, donationId]
+    );
     
     // Award points to shelter (10 points per pickup)
     await db.query('UPDATE shelters SET points = points + 10 WHERE id = $1', [shelter.id]);
@@ -197,7 +212,7 @@ app.post('/api/matches', async (req, res) => {
     const match = matchResult.rows[0];
     
     // Send SMS notification (if Twilio credentials are configured)
-    sendSMSNotification(shelter.contact_phone, donation, shelter);
+    sendSMSNotification(shelterUser.phone, donation, shelter);
     
     // Update global stats
     await updateStats('match', parseFloat(donation.carbon_saved), donation.quantity);
@@ -590,6 +605,178 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// SHELTER AUTHENTICATION ENDPOINTS
+
+// Shelter signup
+app.post('/api/shelter-auth/signup', async (req, res) => {
+  try {
+    const { shelterName, email, password, phone, address } = req.body;
+    
+    if (!shelterName || !email || !password) {
+      return res.status(400).json({ error: 'Shelter name, email, and password are required' });
+    }
+    
+    // Check if email already exists
+    const existing = await db.query(
+      'SELECT id FROM shelter_users WHERE email = $1',
+      [email]
+    );
+    
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create shelter user
+    const result = await db.query(`
+      INSERT INTO shelter_users (shelter_name, email, password, phone, address)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, shelter_name as "shelterName", email, phone, address, created_at as "createdAt"
+    `, [shelterName, email, hashedPassword, phone || null, address || null]);
+    
+    const user = result.rows[0];
+    
+    // Set session
+    req.session.shelterUserId = user.id;
+    req.session.userType = 'shelter';
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Shelter signup error:', error);
+    res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
+// Shelter login
+app.post('/api/shelter-auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    // Find shelter user
+    const result = await db.query(
+      'SELECT * FROM shelter_users WHERE email = $1',
+      [email]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    const shelterUser = result.rows[0];
+    
+    // Verify password
+    const validPassword = await bcrypt.compare(password, shelterUser.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    
+    // Create user object
+    const user = {
+      id: shelterUser.id,
+      shelterName: shelterUser.shelter_name,
+      email: shelterUser.email,
+      phone: shelterUser.phone,
+      address: shelterUser.address,
+      createdAt: shelterUser.created_at
+    };
+    
+    // Set session
+    req.session.shelterUserId = user.id;
+    req.session.userType = 'shelter';
+    
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error('Shelter login error:', error);
+    res.status(500).json({ error: 'Failed to login' });
+  }
+});
+
+// Shelter logout
+app.post('/api/shelter-auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
+    res.json({ success: true });
+  });
+});
+
+// Get current shelter user
+app.get('/api/shelter-auth/me', async (req, res) => {
+  if (!req.session.shelterUserId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
+  try {
+    const result = await db.query(`
+      SELECT id, shelter_name as "shelterName", email, phone, address, 
+             created_at as "createdAt"
+      FROM shelter_users 
+      WHERE id = $1
+    `, [req.session.shelterUserId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json({ user: result.rows[0] });
+  } catch (error) {
+    console.error('Get shelter user error:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// Get donations claimed by this shelter
+app.get('/api/shelter-donations', async (req, res) => {
+  if (!req.session.shelterUserId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
+  try {
+    const result = await db.query(`
+      SELECT 
+        d.id,
+        d.restaurant_name as "restaurantName",
+        d.food_type as "foodType",
+        d.quantity,
+        d.address,
+        d.latitude,
+        d.longitude,
+        d.expires_at as "expiresAt",
+        d.status,
+        d.carbon_saved as "carbonSaved",
+        d.created_at as "createdAt",
+        d.meal_category as "mealCategory",
+        d.allergens,
+        d.dietary_info as "dietaryInfo",
+        d.preparation_time as "preparationTime",
+        CASE 
+          WHEN d.status = 'matched' THEN true 
+          ELSE false 
+        END as claimed,
+        json_build_object(
+          'address', d.address,
+          'latitude', d.latitude,
+          'longitude', d.longitude
+        ) as location
+      FROM donations d
+      WHERE d.shelter_user_id = $1
+      ORDER BY d.created_at DESC
+    `, [req.session.shelterUserId]);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching shelter donations:', error);
+    res.status(500).json({ error: 'Failed to fetch donations' });
+  }
+});
+
 // Helper Functions
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -682,9 +869,30 @@ app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+// Automated cleanup of legacy claims on server startup
+async function cleanupLegacyClaims() {
+  try {
+    const result = await db.query(`
+      UPDATE donations 
+      SET status = 'available', shelter_user_id = NULL
+      WHERE status = 'matched' AND shelter_user_id IS NULL
+    `);
+    
+    if (result.rowCount > 0) {
+      console.log(`🧹 Cleaned up ${result.rowCount} legacy matched donations without shelter authentication`);
+    }
+  } catch (error) {
+    console.error('Error cleaning up legacy claims:', error);
+  }
+}
+
+// Start server
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 Re:Plate App running on http://0.0.0.0:${PORT}`);
   console.log(`📊 Dashboard available at http://0.0.0.0:${PORT}`);
   console.log(`🔧 Admin panel at http://0.0.0.0:${PORT}/admin`);
   console.log(`🌍 Helping reduce food waste and carbon emissions!`);
+  
+  // Run cleanup on startup
+  await cleanupLegacyClaims();
 });
