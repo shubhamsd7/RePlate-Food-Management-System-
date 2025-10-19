@@ -847,6 +847,110 @@
             background: white;
             color: var(--emerald-dark);
         }
+
+        /* Profile Dropdown */
+        .profile-container {
+            position: relative;
+            display: none;
+        }
+
+        .profile-container.active {
+            display: block;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .profile-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-dropdown-header {
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            color: white;
+        }
+
+        .profile-dropdown-header h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+        }
+
+        .profile-dropdown-header p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .profile-dropdown-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .profile-dropdown-menu li {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-dropdown-menu li:hover {
+            background: var(--gray-50);
+        }
+
+        .profile-dropdown-menu li:last-child {
+            border-bottom: none;
+        }
+
+        .nav-auth-container {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -860,7 +964,28 @@
                 <li><a href="#features">Features</a></li>
                 <li><a href="#impact">Impact</a></li>
             </ul>
-            <button class="cta-button" onclick="showDashboard('restaurant')">Get Started</button>
+            <div class="nav-auth-container">
+                <!-- Show when NOT logged in -->
+                <button id="navGetStarted" class="cta-button" onclick="showDashboard('restaurant')">Get Started</button>
+                
+                <!-- Show when logged in -->
+                <div id="navProfile" class="profile-container">
+                    <div class="profile-icon" onclick="toggleProfileDropdown()">
+                        <span id="profileInitial">U</span>
+                    </div>
+                    <div id="profileDropdown" class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <h4 id="profileName">User</h4>
+                            <p id="profileEmail">user@example.com</p>
+                        </div>
+                        <ul class="profile-dropdown-menu">
+                            <li onclick="showChangeAddress()">📍 Change Address</li>
+                            <li onclick="showDashboard('restaurant')">🏠 Dashboard</li>
+                            <li onclick="handleLogout()">🚪 Logout</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -1310,6 +1435,7 @@
                 
                 if (response.ok) {
                     currentUser = data.user;
+                    updateNavAuthUI();
                     closeAuthModal();
                     showRestaurantDashboard(data.user);
                     form.reset();
@@ -1347,6 +1473,7 @@
                 
                 if (response.ok) {
                     currentUser = data.user;
+                    updateNavAuthUI();
                     alert('✅ Account created successfully! Welcome to Re:Plate!');
                     closeAuthModal();
                     showRestaurantDashboard(data.user);
@@ -1367,10 +1494,87 @@
                     credentials: 'include'
                 });
                 currentUser = null;
+                updateNavAuthUI();
                 showLanding();
             } catch (error) {
                 console.error('Logout error:', error);
+                updateNavAuthUI();
                 showLanding();
+            }
+        }
+
+        // Logout handler from profile dropdown
+        async function handleLogout() {
+            await logout();
+        }
+
+        // Toggle profile dropdown
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const profileContainer = document.getElementById('navProfile');
+            const dropdown = document.getElementById('profileDropdown');
+            
+            if (profileContainer && !profileContainer.contains(event.target)) {
+                dropdown?.classList.remove('show');
+            }
+        });
+
+        // Update navigation UI based on auth state
+        function updateNavAuthUI() {
+            const getStartedBtn = document.getElementById('navGetStarted');
+            const profileContainer = document.getElementById('navProfile');
+            
+            if (currentUser) {
+                // User is logged in - show profile dropdown
+                getStartedBtn.style.display = 'none';
+                profileContainer.classList.add('active');
+                
+                // Update profile info
+                const initial = currentUser.businessName ? currentUser.businessName.charAt(0).toUpperCase() : 'U';
+                document.getElementById('profileInitial').textContent = initial;
+                document.getElementById('profileName').textContent = currentUser.businessName || 'User';
+                document.getElementById('profileEmail').textContent = currentUser.email || '';
+            } else {
+                // User is NOT logged in - show Get Started button
+                getStartedBtn.style.display = 'block';
+                profileContainer.classList.remove('active');
+            }
+        }
+
+        // Show change address modal
+        function showChangeAddress() {
+            const newAddress = prompt('Enter your new address:', currentUser?.address || '');
+            if (newAddress && newAddress.trim()) {
+                updateUserAddress(newAddress.trim());
+            }
+            // Close the dropdown
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+
+        // Update user address
+        async function updateUserAddress(newAddress) {
+            try {
+                const response = await fetch(`${API_URL}/api/auth/update-address`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ address: newAddress })
+                });
+
+                if (response.ok) {
+                    currentUser.address = newAddress;
+                    alert('✅ Address updated successfully!');
+                } else {
+                    alert('Failed to update address. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error updating address:', error);
+                alert('Error updating address. Please try again.');
             }
         }
 
@@ -1704,8 +1908,12 @@
         });
 
         // Initialize
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             loadStats();
+            
+            // Check if user is logged in and update nav UI
+            await checkAuth();
+            updateNavAuthUI();
         });
     </script>
 </body>

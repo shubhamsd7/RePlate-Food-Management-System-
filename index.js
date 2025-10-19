@@ -531,6 +531,31 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
+// Update user address
+app.post('/api/auth/update-address', async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { address } = req.body;
+    
+    if (!address || !address.trim()) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+
+    await db.query(
+      'UPDATE restaurant_users SET address = $1 WHERE id = $2',
+      [address.trim(), req.session.userId]
+    );
+
+    res.json({ success: true, address: address.trim() });
+  } catch (error) {
+    console.error('Update address error:', error);
+    res.status(500).json({ error: 'Failed to update address' });
+  }
+});
+
 // Get current user
 app.get('/api/auth/me', async (req, res) => {
   if (!req.session.userId) {
