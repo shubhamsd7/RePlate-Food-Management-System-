@@ -950,6 +950,161 @@
         .nav-auth-container {
             display: flex;
             align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* Notification Bell Styles */
+        .notification-container {
+            position: relative;
+            display: none;
+        }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--gray-700);
+            transition: color 0.2s;
+        }
+
+        .notification-bell:hover {
+            color: var(--emerald);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .notification-badge.show {
+            display: flex;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 350px;
+            max-height: 500px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+
+        .notification-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .notification-dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-dropdown-header h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--gray-900);
+        }
+
+        .mark-all-read-btn {
+            background: none;
+            border: none;
+            color: var(--emerald);
+            font-size: 0.875rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .mark-all-read-btn:hover {
+            background: var(--gray-100);
+        }
+
+        .notification-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .notification-item:hover {
+            background: var(--gray-50);
+        }
+
+        .notification-item.unread {
+            background: #f0fdf4;
+        }
+
+        .notification-item.unread:hover {
+            background: #dcfce7;
+        }
+
+        .notification-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-message {
+            color: var(--gray-800);
+            font-size: 0.875rem;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .notification-time {
+            color: var(--gray-500);
+            font-size: 0.75rem;
+        }
+
+        .notification-unread-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--emerald);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 0.5rem;
+        }
+
+        .notification-empty {
+            padding: 2rem;
+            text-align: center;
+            color: var(--gray-500);
         }
     </style>
 </head>
@@ -967,6 +1122,23 @@
             <div class="nav-auth-container">
                 <!-- Show when NOT logged in -->
                 <button id="navGetStarted" class="cta-button" onclick="showGetStartedModal()">Get Started</button>
+                
+                <!-- Notification Bell (show when logged in) -->
+                <div id="notificationContainer" class="notification-container">
+                    <div class="notification-bell" onclick="toggleNotificationDropdown()">
+                        🔔
+                        <span id="notificationBadge" class="notification-badge">0</span>
+                    </div>
+                    <div id="notificationDropdown" class="notification-dropdown">
+                        <div class="notification-dropdown-header">
+                            <h4>Notifications</h4>
+                            <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">Mark all read</button>
+                        </div>
+                        <ul id="notificationList" class="notification-list">
+                            <li class="notification-empty">No notifications yet</li>
+                        </ul>
+                    </div>
+                </div>
                 
                 <!-- Show when logged in -->
                 <div id="navProfile" class="profile-container">
