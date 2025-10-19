@@ -980,7 +980,7 @@
                         </div>
                         <ul class="profile-dropdown-menu">
                             <li onclick="showChangeAddress()">📍 Change Address</li>
-                            <li onclick="showDashboard('restaurant')">🏠 Dashboard</li>
+                            <li onclick="goToDashboard()">🏠 Dashboard</li>
                             <li onclick="handleLogout()">🚪 Logout</li>
                         </ul>
                     </div>
@@ -1573,7 +1573,12 @@
 
         // Logout handler from profile dropdown
         async function handleLogout() {
-            await logout();
+            // Log out whichever user type is logged in
+            if (currentUser) {
+                await logout();
+            } else if (currentShelterUser) {
+                await logoutShelter();
+            }
         }
 
         // Toggle profile dropdown
@@ -1598,15 +1603,25 @@
             const profileContainer = document.getElementById('navProfile');
             
             if (currentUser) {
-                // User is logged in - show profile dropdown
+                // Restaurant user is logged in - show profile dropdown
                 getStartedBtn.style.display = 'none';
                 profileContainer.classList.add('active');
                 
-                // Update profile info
+                // Update profile info for restaurant
                 const initial = currentUser.businessName ? currentUser.businessName.charAt(0).toUpperCase() : 'U';
                 document.getElementById('profileInitial').textContent = initial;
                 document.getElementById('profileName').textContent = currentUser.businessName || 'User';
                 document.getElementById('profileEmail').textContent = currentUser.email || '';
+            } else if (currentShelterUser) {
+                // Shelter user is logged in - show profile dropdown
+                getStartedBtn.style.display = 'none';
+                profileContainer.classList.add('active');
+                
+                // Update profile info for shelter
+                const initial = currentShelterUser.shelterName ? currentShelterUser.shelterName.charAt(0).toUpperCase() : 'S';
+                document.getElementById('profileInitial').textContent = initial;
+                document.getElementById('profileName').textContent = currentShelterUser.shelterName || 'Shelter';
+                document.getElementById('profileEmail').textContent = currentShelterUser.email || '';
             } else {
                 // User is NOT logged in - show Get Started button
                 getStartedBtn.style.display = 'block';
@@ -1614,9 +1629,20 @@
             }
         }
 
+        // Navigate to the appropriate dashboard based on logged-in user type
+        function goToDashboard() {
+            if (currentUser) {
+                showDashboard('restaurant');
+            } else if (currentShelterUser) {
+                showDashboard('shelter');
+            }
+            // Close the dropdown
+            document.getElementById('profileDropdown').classList.remove('show');
+        }
+
         // Show change address modal
         function showChangeAddress() {
-            const newAddress = prompt('Enter your new address:', currentUser?.address || '');
+            const newAddress = prompt('Enter your new address:', currentUser?.address || currentShelterUser?.address || '');
             if (newAddress && newAddress.trim()) {
                 updateUserAddress(newAddress.trim());
             }
@@ -1693,6 +1719,7 @@
                 if (response.ok) {
                     currentShelterUser = data.user;
                     console.log('✅ Shelter login successful, currentShelterUser set to:', currentShelterUser);
+                    updateNavAuthUI();
                     closeShelterAuthModal();
                     showShelterDashboard(data.user);
                     form.reset();
@@ -1729,6 +1756,7 @@
                 if (response.ok) {
                     currentShelterUser = data.user;
                     alert('✅ Account created successfully! Welcome to Re:Plate!');
+                    updateNavAuthUI();
                     closeShelterAuthModal();
                     showShelterDashboard(data.user);
                     form.reset();
@@ -1748,9 +1776,12 @@
                     credentials: 'include'
                 });
                 currentShelterUser = null;
+                updateNavAuthUI();
                 showLanding();
             } catch (error) {
                 console.error('Logout error:', error);
+                currentShelterUser = null;
+                updateNavAuthUI();
                 showLanding();
             }
         }
