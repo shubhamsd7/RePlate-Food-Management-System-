@@ -1773,33 +1773,212 @@
         function updateNavAuthUI() {
             const getStartedBtn = document.getElementById('navGetStarted');
             const profileContainer = document.getElementById('navProfile');
+            const notificationContainer = document.getElementById('notificationContainer');
             
             if (currentUser) {
-                // Restaurant user is logged in - show profile dropdown
+                // Restaurant user is logged in - show profile dropdown and notifications
                 getStartedBtn.style.display = 'none';
                 profileContainer.classList.add('active');
+                notificationContainer.style.display = 'block';
                 
                 // Update profile info for restaurant
                 const initial = currentUser.businessName ? currentUser.businessName.charAt(0).toUpperCase() : 'U';
                 document.getElementById('profileInitial').textContent = initial;
                 document.getElementById('profileName').textContent = currentUser.businessName || 'User';
                 document.getElementById('profileEmail').textContent = currentUser.email || '';
+                
+                // Start notification polling
+                loadNotifications();
+                startNotificationPolling();
             } else if (currentShelterUser) {
-                // Shelter user is logged in - show profile dropdown
+                // Shelter user is logged in - show profile dropdown and notifications
                 getStartedBtn.style.display = 'none';
                 profileContainer.classList.add('active');
+                notificationContainer.style.display = 'block';
                 
                 // Update profile info for shelter
                 const initial = currentShelterUser.shelterName ? currentShelterUser.shelterName.charAt(0).toUpperCase() : 'S';
                 document.getElementById('profileInitial').textContent = initial;
                 document.getElementById('profileName').textContent = currentShelterUser.shelterName || 'Shelter';
                 document.getElementById('profileEmail').textContent = currentShelterUser.email || '';
+                
+                // Start notification polling
+                loadNotifications();
+                startNotificationPolling();
             } else {
                 // User is NOT logged in - show Get Started button
                 getStartedBtn.style.display = 'block';
                 profileContainer.classList.remove('active');
+                notificationContainer.style.display = 'none';
+                stopNotificationPolling();
             }
         }
+
+        // NOTIFICATION FUNCTIONS
+        let notificationPollingInterval = null;
+
+        // Toggle notification dropdown
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            const profileDropdown = document.getElementById('profileDropdown');
+            
+            // Close profile dropdown if open
+            profileDropdown.classList.remove('show');
+            
+            // Toggle notification dropdown
+            dropdown.classList.toggle('show');
+            
+            // If opening, refresh notifications
+            if (dropdown.classList.contains('show')) {
+                loadNotifications();
+            }
+        }
+
+        // Load notifications from API
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`${API_URL}/api/notifications`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) return;
+                
+                const notifications = await response.json();
+                displayNotifications(notifications);
+                updateUnreadCount();
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // Display notifications in the dropdown
+        function displayNotifications(notifications) {
+            const notificationList = document.getElementById('notificationList');
+            
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<li class="notification-empty">No notifications yet</li>';
+                return;
+            }
+            
+            notificationList.innerHTML = notifications.map(notif => {
+                const isUnread = !notif.isRead;
+                const icon = notif.type === 'new_donation' ? '🍽️' : '✅';
+                const time = formatNotificationTime(notif.createdAt);
+                
+                return `
+                    <li class="notification-item ${isUnread ? 'unread' : ''}" 
+                        onclick="markNotificationRead(${notif.id})">
+                        <span class="notification-icon">${icon}</span>
+                        <div class="notification-content">
+                            <p class="notification-message">${notif.message}</p>
+                            <span class="notification-time">${time}</span>
+                        </div>
+                        ${isUnread ? '<span class="notification-unread-dot"></span>' : ''}
+                    </li>
+                `;
+            }).join('');
+        }
+
+        // Update unread count badge
+        async function updateUnreadCount() {
+            try {
+                const response = await fetch(`${API_URL}/api/notifications/unread-count`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const badge = document.getElementById('notificationBadge');
+                
+                if (data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.classList.add('show');
+                } else {
+                    badge.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('Error fetching unread count:', error);
+            }
+        }
+
+        // Mark a single notification as read
+        async function markNotificationRead(notificationId) {
+            try {
+                await fetch(`${API_URL}/api/notifications/mark-read/${notificationId}`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                // Refresh notifications
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        // Mark all notifications as read
+        async function markAllNotificationsRead() {
+            try {
+                await fetch(`${API_URL}/api/notifications/mark-all-read`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                // Refresh notifications
+                loadNotifications();
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+            }
+        }
+
+        // Start notification polling (every 30 seconds)
+        function startNotificationPolling() {
+            // Clear any existing interval
+            stopNotificationPolling();
+            
+            // Poll immediately
+            updateUnreadCount();
+            
+            // Then poll every 30 seconds
+            notificationPollingInterval = setInterval(() => {
+                updateUnreadCount();
+            }, 30000);
+        }
+
+        // Stop notification polling
+        function stopNotificationPolling() {
+            if (notificationPollingInterval) {
+                clearInterval(notificationPollingInterval);
+                notificationPollingInterval = null;
+            }
+        }
+
+        // Format notification time (e.g., "2 minutes ago")
+        function formatNotificationTime(timestamp) {
+            const now = new Date();
+            const notifTime = new Date(timestamp);
+            const diffMs = now - notifTime;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+            return notifTime.toLocaleDateString();
+        }
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            const notificationContainer = document.getElementById('notificationContainer');
+            const dropdown = document.getElementById('notificationDropdown');
+            
+            if (notificationContainer && !notificationContainer.contains(event.target)) {
+                dropdown?.classList.remove('show');
+            }
+        });
 
         // Navigate to the appropriate dashboard based on logged-in user type
         function goToDashboard() {
