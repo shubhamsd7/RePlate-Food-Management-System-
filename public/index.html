@@ -2264,9 +2264,16 @@
             loadStats();
             
             // Check if user is logged in and update nav UI
-            await checkAuth();
-            await checkShelterAuth();
+            const restaurantUser = await checkAuth();
+            const shelterUser = await checkShelterAuth();
             updateNavAuthUI();
+            
+            // If user is logged in, show their dashboard instead of landing page
+            if (restaurantUser) {
+                showRestaurantDashboard(restaurantUser);
+            } else if (shelterUser) {
+                showShelterDashboard(shelterUser);
+            }
         });
     </script>
 </body>
