@@ -324,8 +324,13 @@ app.get('/api/nearby-shelters/:donationId', async (req, res) => {
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT name as "shelterName", points
-      FROM shelters
+      SELECT 
+        su.shelter_name as "shelterName", 
+        COUNT(d.id) * 10 as points
+      FROM shelter_users su
+      LEFT JOIN donations d ON d.shelter_user_id = su.id AND d.status = 'matched'
+      GROUP BY su.id, su.shelter_name
+      HAVING COUNT(d.id) > 0
       ORDER BY points DESC
       LIMIT 20
     `);
