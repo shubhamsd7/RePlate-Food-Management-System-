@@ -1570,10 +1570,15 @@
             }
         }
 
-        // Load Restaurant's Donations
+        // Load Restaurant's Donations (filtered by current user)
         async function loadRestaurantDonations() {
             try {
-                const response = await fetch(`${API_URL}/api/donations`);
+                // Only fetch donations for the current logged-in restaurant
+                const url = currentUser && currentUser.id 
+                    ? `${API_URL}/api/donations?restaurantUserId=${currentUser.id}`
+                    : `${API_URL}/api/donations`;
+                    
+                const response = await fetch(url);
                 const donations = await response.json();
                 
                 const container = document.getElementById('restaurantDonations');

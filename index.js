@@ -47,14 +47,25 @@ app.use('/attached_assets', express.static(path.join(__dirname, 'attached_assets
 // Get all donations (including matched ones)
 app.get('/api/donations', async (req, res) => {
   try {
-    const result = await db.query(`
+    const { restaurantUserId } = req.query;
+    
+    let query = `
       SELECT id, restaurant_name as "restaurantName", food_type as "foodType", 
              quantity, address, latitude as lat, longitude as lng,
              expires_at as "expiresAt", status, carbon_saved as "carbonSaved",
-             created_at as "createdAt"
+             created_at as "createdAt", restaurant_user_id as "restaurantUserId"
       FROM donations
-      ORDER BY created_at DESC
-    `);
+    `;
+    
+    const params = [];
+    if (restaurantUserId) {
+      query += ` WHERE restaurant_user_id = $1`;
+      params.push(restaurantUserId);
+    }
+    
+    query += ` ORDER BY created_at DESC`;
+    
+    const result = await db.query(query, params);
     
     const donations = result.rows.map(d => ({
       ...d,
@@ -99,6 +110,9 @@ app.post('/api/donations', async (req, res) => {
   try {
     const { restaurantName, foodType, quantity, address, expiresIn } = req.body;
     
+    // Get the logged-in user's ID from session
+    const restaurantUserId = req.session.userId || null;
+    
     // Demo coordinates (in production, use Google Maps Geocoding API)
     const demoCoords = {
       lat: 37.7749 + (Math.random() - 0.5) * 0.05,
@@ -113,11 +127,11 @@ app.post('/api/donations', async (req, res) => {
     const expiresAt = new Date(Date.now() + (expiresIn || 4) * 60 * 60 * 1000);
     
     const result = await db.query(`
-      INSERT INTO donations (restaurant_name, food_type, quantity, address, latitude, longitude, expires_at, carbon_saved)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO donations (restaurant_name, food_type, quantity, address, latitude, longitude, expires_at, carbon_saved, restaurant_user_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id, restaurant_name as "restaurantName", food_type as "foodType", 
                 quantity, status, carbon_saved as "carbonSaved", created_at as "createdAt"
-    `, [restaurantName, foodType, mealCount, address || 'Demo Address', demoCoords.lat, demoCoords.lng, expiresAt, carbonSaved]);
+    `, [restaurantName, foodType, mealCount, address || 'Demo Address', demoCoords.lat, demoCoords.lng, expiresAt, carbonSaved, restaurantUserId]);
     
     const donation = result.rows[0];
     
