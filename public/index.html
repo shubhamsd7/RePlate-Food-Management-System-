@@ -1640,12 +1640,15 @@
                 if (response.ok) {
                     const data = await response.json();
                     currentShelterUser = data.user;
+                    console.log('✅ Shelter auth checked - User logged in:', currentShelterUser);
                     return data.user;
                 }
                 currentShelterUser = null;
+                console.log('❌ Shelter auth checked - No user');
                 return null;
             } catch (error) {
                 currentShelterUser = null;
+                console.log('❌ Shelter auth error:', error);
                 return null;
             }
         }
@@ -1671,6 +1674,7 @@
                 
                 if (response.ok) {
                     currentShelterUser = data.user;
+                    console.log('✅ Shelter login successful, currentShelterUser set to:', currentShelterUser);
                     closeShelterAuthModal();
                     showShelterDashboard(data.user);
                     form.reset();
@@ -2088,12 +2092,15 @@
 
         // Claim Donation
         async function claimDonation(donationId) {
+            console.log('🔍 Claiming donation, currentShelterUser is:', currentShelterUser);
             // Check if shelter is logged in
             if (!currentShelterUser) {
+                console.log('❌ currentShelterUser is null, showing login modal');
                 document.getElementById('shelterAuthModal').style.display = 'block';
                 showShelterLoginForm();
                 return;
             }
+            console.log('✅ User is logged in, proceeding with claim');
 
             try {
                 const response = await fetch(`${API_URL}/api/matches`, {
