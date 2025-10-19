@@ -1106,6 +1106,288 @@
             text-align: center;
             color: var(--gray-500);
         }
+
+        /* Blog / Inspiration Section Styles */
+        .blog-hero {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            padding: 6rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            color: white;
+        }
+
+        .blog-hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .blog-category {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .blog-hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .blog-hero-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .blog-hero-image img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .blog-cta-button {
+            background: white;
+            color: var(--emerald);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .blog-cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .blog-cta-button.secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .blog-cta-button.secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .blog-articles {
+            padding: 6rem 2rem;
+            background: var(--gray-50);
+        }
+
+        .blog-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .blog-section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .blog-section-header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .blog-section-header p {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .blog-card-image {
+            position: relative;
+            height: 240px;
+            overflow: hidden;
+        }
+
+        .blog-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .blog-card:hover .blog-card-image img {
+            transform: scale(1.1);
+        }
+
+        .blog-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .blog-card-content {
+            padding: 2rem;
+        }
+
+        .blog-date {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .blog-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+            line-height: 1.4;
+        }
+
+        .blog-card p {
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .blog-stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .blog-stats span {
+            background: var(--gray-100);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+
+        .blog-metrics {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .blog-metrics h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 4rem;
+            color: var(--gray-900);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 1.25rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-description {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .blog-cta-section {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--amber) 100%);
+            padding: 6rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .blog-cta-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .blog-cta-content p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .blog-cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .blog-hero {
+                grid-template-columns: 1fr;
+                padding: 4rem 1.5rem;
+                gap: 2rem;
+            }
+
+            .blog-hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            .metric-number {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1118,6 +1400,7 @@
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#features">Features</a></li>
                 <li><a href="#impact">Impact</a></li>
+                <li><a href="#" onclick="showInspiration(); return false;">Inspiration</a></li>
             </ul>
             <div class="nav-auth-container">
                 <!-- Show when NOT logged in -->
@@ -1350,6 +1633,182 @@
                         </ul>
                         <button class="cta-button" onclick="showDashboard('shelter')">Get Started as Shelter</button>
                     </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Inspiration Section (Blog Landing Page) -->
+    <div id="inspiration-page" style="display: none;">
+        <!-- Blog Hero Section -->
+        <section class="blog-hero">
+            <div class="blog-hero-content">
+                <span class="blog-category">Featured Story</span>
+                <h1>Stories of Impact: How We're Changing Lives One Meal at a Time</h1>
+                <p class="blog-hero-subtitle">Discover inspiring stories from restaurants and shelters across the nation who are making a real difference in their communities.</p>
+                <div class="blog-hero-meta">
+                    <span>📅 October 19, 2025</span>
+                    <span>•</span>
+                    <span>⏱️ 5 min read</span>
+                </div>
+                <button class="blog-cta-button" onclick="scrollToArticles()">Explore All Stories</button>
+            </div>
+            <div class="blog-hero-image">
+                <img src="attached_assets/stock_images/fresh_vegetables_hea_6a08041c.jpg" alt="Fresh vegetables">
+            </div>
+        </section>
+
+        <!-- Blog Articles Grid -->
+        <section class="blog-articles" id="blog-articles">
+            <div class="blog-container">
+                <div class="blog-section-header">
+                    <h2>Latest Stories</h2>
+                    <p>Real stories from real people making a difference</p>
+                </div>
+
+                <div class="blog-grid">
+                    <!-- Article 1 -->
+                    <article class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="attached_assets/stock_images/restaurant_kitchen_f_e6535ca6.jpg" alt="Restaurant kitchen">
+                            <span class="blog-badge">Success Story</span>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-date">October 15, 2025</span>
+                            <h3>Tony's Pizza Palace Saves 10,000 Meals in First Year</h3>
+                            <p>How a small family restaurant in San Francisco turned their surplus food into community impact, reducing waste by 75% while helping 15 local shelters.</p>
+                            <div class="blog-stats">
+                                <span>🍽️ 10,000 meals</span>
+                                <span>♻️ 7.6 tons CO₂</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article 2 -->
+                    <article class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="attached_assets/stock_images/fresh_vegetables_hea_6a08041c.jpg" alt="Fresh vegetables">
+                            <span class="blog-badge">Community Impact</span>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-date">October 12, 2025</span>
+                            <h3>Hope Shelter Feeds 200 Families Weekly Through Re:Plate</h3>
+                            <p>Director Sarah Martinez shares how real-time notifications have transformed their ability to serve their community with fresh, nutritious meals.</p>
+                            <div class="blog-stats">
+                                <span>👨‍👩‍👧‍👦 200 families</span>
+                                <span>📱 Instant alerts</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article 3 -->
+                    <article class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="attached_assets/stock_images/restaurant_kitchen_f_e6535ca6.jpg" alt="Restaurant staff">
+                            <span class="blog-badge">Behind the Scenes</span>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-date">October 10, 2025</span>
+                            <h3>The 60-Second Solution: How Re:Plate Streamlines Food Donation</h3>
+                            <p>Restaurant owners explain how posting surplus food takes less time than throwing it away, and why they'll never go back to the old way.</p>
+                            <div class="blog-stats">
+                                <span>⚡ <60 seconds</span>
+                                <span>📊 Zero hassle</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article 4 -->
+                    <article class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="attached_assets/stock_images/fresh_vegetables_hea_6a08041c.jpg" alt="Food preparation">
+                            <span class="blog-badge">Expert Insights</span>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-date">October 8, 2025</span>
+                            <h3>The Hidden Environmental Cost of Restaurant Food Waste</h3>
+                            <p>Environmental scientist Dr. James Chen breaks down how 22 billion pounds of annual restaurant waste impacts climate change—and what we can do about it.</p>
+                            <div class="blog-stats">
+                                <span>🌍 Climate impact</span>
+                                <span>📉 40% reduction</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article 5 -->
+                    <article class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="attached_assets/stock_images/restaurant_kitchen_f_e6535ca6.jpg" alt="Community gathering">
+                            <span class="blog-badge">Case Study</span>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-date">October 5, 2025</span>
+                            <h3>Building Bridges: How Food Donation Connects Communities</h3>
+                            <p>A deep dive into unexpected partnerships between high-end restaurants and neighborhood shelters, creating relationships that go far beyond food.</p>
+                            <div class="blog-stats">
+                                <span>🤝 50+ partnerships</span>
+                                <span>💚 Lasting bonds</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article 6 -->
+                    <article class="blog-card">
+                        <div class="blog-card-image">
+                            <img src="attached_assets/stock_images/fresh_vegetables_hea_6a08041c.jpg" alt="Fresh ingredients">
+                            <span class="blog-badge">How-To Guide</span>
+                        </div>
+                        <div class="blog-card-content">
+                            <span class="blog-date">October 1, 2025</span>
+                            <h3>5 Tips for Maximizing Your Food Donation Impact</h3>
+                            <p>Best practices from top-performing restaurants on timing, packaging, and communication to ensure your donations make the biggest difference.</p>
+                            <div class="blog-stats">
+                                <span>✅ 5 actionable tips</span>
+                                <span>📈 3x impact</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Success Metrics Section -->
+        <section class="blog-metrics">
+            <div class="blog-container">
+                <h2>By the Numbers: Our Collective Impact</h2>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-number">216,543</div>
+                        <div class="metric-label">Meals Saved</div>
+                        <div class="metric-description">And counting every single day</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-number">164,532 lbs</div>
+                        <div class="metric-label">CO₂ Prevented</div>
+                        <div class="metric-description">Equivalent to 356 cars off the road</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-number">1,247</div>
+                        <div class="metric-label">Active Partners</div>
+                        <div class="metric-description">Restaurants & shelters nationwide</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-number">58 seconds</div>
+                        <div class="metric-label">Average Match Time</div>
+                        <div class="metric-description">From post to pickup confirmed</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Section -->
+        <section class="blog-cta-section">
+            <div class="blog-cta-content">
+                <h2>Ready to Write Your Own Success Story?</h2>
+                <p>Join thousands of restaurants and shelters making a real difference in their communities.</p>
+                <div class="blog-cta-buttons">
+                    <button class="blog-cta-button primary" onclick="showGetStartedModal()">Get Started Today</button>
+                    <button class="blog-cta-button secondary" onclick="showLanding()">Learn More</button>
                 </div>
             </div>
         </section>
@@ -2171,6 +2630,7 @@
         function showShelterDashboard(user) {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('inspiration-page').style.display = 'none';
             document.getElementById('shelter-dashboard').classList.add('active');
             
             if (user) {
@@ -2268,6 +2728,7 @@
         function showRestaurantDashboard(user) {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('restaurant-dashboard').style.display = 'block';
+            document.getElementById('inspiration-page').style.display = 'none';
             document.getElementById('shelter-dashboard').classList.remove('active');
             
             // Display user info
@@ -2412,7 +2873,22 @@
             document.getElementById('landing-page').style.display = 'block';
             document.getElementById('restaurant-dashboard').style.display = 'none';
             document.getElementById('shelter-dashboard').classList.remove('active');
+            document.getElementById('inspiration-page').style.display = 'none';
             window.scrollTo(0, 0);
+        }
+
+        // Show Inspiration/Blog Section
+        function showInspiration() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            document.getElementById('inspiration-page').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // Scroll to articles section within inspiration page
+        function scrollToArticles() {
+            document.getElementById('blog-articles').scrollIntoView({ behavior: 'smooth' });
         }
 
         // Create Donation
