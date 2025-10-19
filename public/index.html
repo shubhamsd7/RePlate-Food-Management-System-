@@ -2872,6 +2872,10 @@
             document.getElementById('restaurant-dashboard').style.display = 'none';
             document.getElementById('shelter-dashboard').classList.remove('active');
             document.getElementById('inspiration-page').style.display = 'none';
+            document.getElementById('about-page').style.display = 'none';
+            document.getElementById('contact-page').style.display = 'none';
+            document.getElementById('privacy-page').style.display = 'none';
+            document.getElementById('terms-page').style.display = 'none';
             window.scrollTo(0, 0);
         }
 
@@ -2881,7 +2885,81 @@
             document.getElementById('restaurant-dashboard').style.display = 'none';
             document.getElementById('shelter-dashboard').classList.remove('active');
             document.getElementById('inspiration-page').style.display = 'block';
+            document.getElementById('about-page').style.display = 'none';
+            document.getElementById('contact-page').style.display = 'none';
+            document.getElementById('privacy-page').style.display = 'none';
+            document.getElementById('terms-page').style.display = 'none';
             window.scrollTo(0, 0);
+        }
+
+        // Show About Us Page
+        function showAbout() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            document.getElementById('inspiration-page').style.display = 'none';
+            document.getElementById('about-page').style.display = 'block';
+            document.getElementById('contact-page').style.display = 'none';
+            document.getElementById('privacy-page').style.display = 'none';
+            document.getElementById('terms-page').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // Show Contact Page
+        function showContact() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            document.getElementById('inspiration-page').style.display = 'none';
+            document.getElementById('about-page').style.display = 'none';
+            document.getElementById('contact-page').style.display = 'block';
+            document.getElementById('privacy-page').style.display = 'none';
+            document.getElementById('terms-page').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // Show Privacy Policy Page
+        function showPrivacy() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            document.getElementById('inspiration-page').style.display = 'none';
+            document.getElementById('about-page').style.display = 'none';
+            document.getElementById('contact-page').style.display = 'none';
+            document.getElementById('privacy-page').style.display = 'block';
+            document.getElementById('terms-page').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // Show Terms of Service Page
+        function showTerms() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('restaurant-dashboard').style.display = 'none';
+            document.getElementById('shelter-dashboard').classList.remove('active');
+            document.getElementById('inspiration-page').style.display = 'none';
+            document.getElementById('about-page').style.display = 'none';
+            document.getElementById('contact-page').style.display = 'none';
+            document.getElementById('privacy-page').style.display = 'none';
+            document.getElementById('terms-page').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // Handle Contact Form Submission
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            
+            // Show success message
+            document.getElementById('contactSuccess').style.display = 'block';
+            
+            // Reset form
+            event.target.reset();
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById('contactSuccess').style.display = 'none';
+            }, 5000);
+            
+            return false;
         }
 
         // Create Donation
