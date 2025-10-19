@@ -1859,7 +1859,7 @@
                         <div class="food-type">${donation.foodType}</div>
                         <div class="info">📦 ${donation.quantity} meals</div>
                         <div class="info">⏱️ Pickup by: ${new Date(donation.expiresAt).toLocaleString()}</div>
-                        <div class="info">🌱 Impact: ${donation.carbonSaved.toFixed(2)} kg CO₂</div>
+                        <div class="info">🌱 Impact: ${parseFloat(donation.carbonSaved).toFixed(2)} kg CO₂</div>
                         <div class="info">📍 ${donation.location ? donation.location.address : 'N/A'}</div>
                         <div class="info" style="color: var(--emerald); font-weight: 600;">✅ Claimed</div>
                     </div>
