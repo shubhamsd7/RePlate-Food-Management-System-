@@ -25,7 +25,6 @@ RePlate is a lightweight web platform that **instantly** connects restaurants wi
 
 - **Backend:** Node.js + Express
 - **Frontend:** Vanilla JavaScript (responsive)
-- **Maps:** Google Maps API
 - **Version Control:** GitHub API integration
 
 RePlate is a real-time web platform that connects restaurants with surplus food to local shelters and food banks. The application facilitates instant food donation matching through SMS notifications, location-based pairing, and gamification mechanics. Built as a hackathon-ready demonstration project, it showcases social impact through quantified metrics like carbon footprint reduction and meals saved.
