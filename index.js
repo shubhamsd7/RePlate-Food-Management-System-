@@ -138,6 +138,22 @@ app.post('/api/donations', async (req, res) => {
     // Update global stats
     await updateStats('donation', parseFloat(carbonSaved), mealCount);
     
+    // Create notifications for all shelter users
+    try {
+      const shelterUsers = await db.query('SELECT id FROM shelter_users');
+      const notificationMessage = `New donation available: ${foodType} (${mealCount} meals) from ${restaurantName}`;
+      
+      for (const shelterUser of shelterUsers.rows) {
+        await db.query(`
+          INSERT INTO notifications (user_type, user_id, message, type, related_donation_id)
+          VALUES ($1, $2, $3, $4, $5)
+        `, ['shelter', shelterUser.id, notificationMessage, 'new_donation', donation.id]);
+      }
+    } catch (notifError) {
+      console.error('Error creating notifications:', notifError);
+      // Don't fail the request if notification creation fails
+    }
+    
     res.json({ success: true, donation });
   } catch (error) {
     console.error('Error creating donation:', error);
@@ -210,6 +226,20 @@ app.post('/api/matches', async (req, res) => {
     `, [donationId, shelter.id, donation.restaurant_name, shelter.name, donation.food_type, donation.quantity, donation.carbon_saved]);
     
     const match = matchResult.rows[0];
+    
+    // Create notification for restaurant user (if donation was posted by a logged-in user)
+    if (donation.restaurant_user_id) {
+      try {
+        const notificationMessage = `Your donation of ${donation.food_type} (${donation.quantity} meals) was claimed by ${shelter.name}`;
+        await db.query(`
+          INSERT INTO notifications (user_type, user_id, message, type, related_donation_id)
+          VALUES ($1, $2, $3, $4, $5)
+        `, ['restaurant', donation.restaurant_user_id, notificationMessage, 'donation_claimed', donationId]);
+      } catch (notifError) {
+        console.error('Error creating notification for restaurant:', notifError);
+        // Don't fail the request if notification creation fails
+      }
+    }
     
     // Send SMS notification (if Twilio credentials are configured)
     sendSMSNotification(shelterUser.phone, donation, shelter);
