@@ -966,7 +966,7 @@
             </ul>
             <div class="nav-auth-container">
                 <!-- Show when NOT logged in -->
-                <button id="navGetStarted" class="cta-button" onclick="showDashboard('restaurant')">Get Started</button>
+                <button id="navGetStarted" class="cta-button" onclick="showGetStartedModal()">Get Started</button>
                 
                 <!-- Show when logged in -->
                 <div id="navProfile" class="profile-container">
@@ -1181,6 +1181,27 @@
                 </div>
             </div>
         </section>
+    </div>
+
+    <!-- Get Started Modal -->
+    <div id="getStartedModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeGetStartedModal()">&times;</span>
+            
+            <div class="auth-form" style="text-align: center;">
+                <h2>🚀 Get Started with Re:Plate</h2>
+                <p style="color: var(--gray-600); margin-bottom: 2rem;">Choose your account type</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="cta-button" onclick="selectUserType('restaurant')" style="padding: 1.5rem; font-size: 1.1rem;">
+                        🍽️ I'm a Restaurant
+                    </button>
+                    <button class="cta-button" onclick="selectUserType('shelter')" style="padding: 1.5rem; font-size: 1.1rem; background: linear-gradient(135deg, var(--amber) 0%, var(--emerald) 100%);">
+                        🏠 I'm a Shelter
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Authentication Modal -->
@@ -1751,6 +1772,20 @@
         function closeShelterAuthModal() {
             document.getElementById('shelterAuthModal').style.display = 'none';
             showShelterLoginForm(); // Reset to login form
+        }
+
+        // Get Started modal controls
+        function showGetStartedModal() {
+            document.getElementById('getStartedModal').style.display = 'block';
+        }
+
+        function closeGetStartedModal() {
+            document.getElementById('getStartedModal').style.display = 'none';
+        }
+
+        function selectUserType(type) {
+            closeGetStartedModal();
+            showDashboard(type);
         }
 
         // Show shelter dashboard with user data
